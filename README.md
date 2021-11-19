@@ -1,0 +1,1 @@
+Basic dependencies for all my Spotify projects.
