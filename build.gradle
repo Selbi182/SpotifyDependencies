@@ -4,7 +4,7 @@ buildscript {
     }
 
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.4.5")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.5.6")
     }
 }
 
@@ -13,7 +13,10 @@ apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
+apply plugin: 'maven-publish'
 
+group = 'de.selbi.spotify'
+version = '1.0'
 jar {
     baseName = 'SpotifyDependencies'
     version = '1.0'
@@ -28,9 +31,31 @@ repositories {
     }
 }
 
+jar {
+    enabled = true
+}
+
+bootJar {
+    classifier = 'application'
+}
+
+publishing {
+    repositories {
+        maven {
+            url 'https://mymavenrepo.com/repo/dKBgnxLBDZsY8Dh8aCq9/'
+        }
+    }
+    publications {
+        maven(MavenPublication) {
+            from components.java
+        }
+    }
+}
+//project.tasks.publish.dependsOn jar
+
 dependencies {
     // Do not update from 2.4.5! It's tempting, but there will be a million compatibility issues with Gradle and the Thin JAR builder!
-    implementation 'org.springframework.boot:spring-boot-starter-web:2.4.5'
+    implementation 'org.springframework.boot:spring-boot-starter-web:2.5.6'
     implementation 'se.michaelthelin.spotify:spotify-web-api-java:6.5.4'
     implementation 'com.google.guava:guava:31.0.1-jre'
 }
