@@ -15,7 +15,7 @@ Add the repo and dependency in your `build.gradle`:
     }
     
     dependencies {
-        implementation 'spotify:spotify-dependencies:1.2.0'
+        implementation 'spotify:spotify-dependencies:1.2.3'
     }
 ```
 
