@@ -52,6 +52,7 @@ public final class BotUtils {
 	 * 
 	 * @param baseDate       the date to check "now" against
 	 * @param timeoutInHours the timeout in hours
+	 * @return true if is within timeout window
 	 */
 	public static boolean isWithinTimeoutWindow(Date baseDate, int timeoutInHours) {
 		Instant baseTime = Instant.ofEpochMilli(baseDate.getTime());
@@ -60,9 +61,10 @@ public final class BotUtils {
 	}
 
 	/**
-	 * Creates a map with a full AlbumGroup -> List<T> relationship (the lists are
+	 * Creates a map with a full AlbumGroup to List relationship (the lists are
 	 * empty)
-	 * 
+	 *
+	 * @param <T> anything
 	 * @return the album group
 	 */
 	public static <T> Map<AlbumGroup, List<T>> createAlbumGroupToListOfTMap() {
@@ -75,7 +77,9 @@ public final class BotUtils {
 
 	/**
 	 * Returns true if all mappings just contain an empty list (not null)
-	 * 
+	 *
+	 * @param <K> anything
+	 * @param <T> anything (inside a list)
 	 * @param listsByMap the map
 	 * @return true if is empty
 	 */
@@ -255,7 +259,7 @@ public final class BotUtils {
 	}
 	
 	/**
-	 * Return the ID of a URI in the format spotify:album:123456789 -> 123456789
+	 * Return the ID of a URI in the format spotify:album:123456789 to 123456789
 	 * 
 	 * @param uri the uri
 	 * @return the ID of the uri

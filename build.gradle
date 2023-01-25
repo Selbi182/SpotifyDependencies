@@ -8,18 +8,19 @@ buildscript {
 apply plugin: 'java-library'
 apply plugin: 'maven-publish'
 
-group = 'de.selbi.spotify'
-version = '1.1.2'
+group = 'spotify'
+version = '1.1.5'
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
 
 repositories {
     mavenCentral()
     maven {
         url 'https://jitpack.io'
     }
-}
-
-jar {
-    enabled = true
 }
 
 publishing {
@@ -30,19 +31,40 @@ publishing {
         }
     }
     publications {
-        maven(MavenPublication) {
+        mavenJava(MavenPublication) {
+            artifactId = 'spotify-dependencies'
             from components.java
+            versionMapping {
+                usage('java-api') {
+                    fromResolutionOf('runtimeClasspath')
+                }
+                usage('java-runtime') {
+                    fromResolutionResult()
+                }
+            }
+            pom {
+                name = 'spotify-dependencies'
+                description = 'Basic dependencies for all my Spotify projects'
+                url = 'https://github.com/Selbi182/SpotifyDependencies'
+                licenses {
+                    license {
+                        name = 'MIT License'
+                        url = 'https://opensource.org/licenses/mit-license.php'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'selbi'
+                        name = 'Selbi'
+                        email = 'selbix@web.de'
+                    }
+                }
+            }
         }
     }
 }
 
 dependencies {
     implementation "org.springframework.boot:spring-boot-starter-web:$springVersion"
-    implementation "org.springframework.boot:spring-boot-starter-webflux:$springVersion"
-
     implementation 'se.michaelthelin.spotify:spotify-web-api-java:7.3.0'
-
-    implementation 'com.google.guava:guava:31.1-jre'
-    implementation 'de.androidpit:color-thief:1.1.2'
-    implementation 'org.jsoup:jsoup:1.15.3'
 }

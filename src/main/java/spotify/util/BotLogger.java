@@ -13,11 +13,10 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
-import com.google.common.base.Strings;
 
 @Component
 public class BotLogger {
@@ -41,6 +40,8 @@ public class BotLogger {
 
 	/**
 	 * Log a debug message
+	 *
+	 * @param message the message to log
 	 */
 	public void debug(String message) {
 		logAtLevel(message, Level.DEBUG);
@@ -48,6 +49,8 @@ public class BotLogger {
 
 	/**
 	 * Log an info message
+	 *
+	 * @param message the message to log
 	 */
 	public void info(String message) {
 		logAtLevel(message, Level.INFO);
@@ -55,6 +58,8 @@ public class BotLogger {
 
 	/**
 	 * Log a warning message
+	 *
+	 * @param message the message to log
 	 */
 	public void warning(String message) {
 		logAtLevel(message, Level.WARNING);
@@ -62,6 +67,8 @@ public class BotLogger {
 
 	/**
 	 * Log an error message
+	 *
+	 * @param message the message to log
 	 */
 	public void error(String message) {
 		logAtLevel(message, Level.ERROR);
@@ -69,6 +76,9 @@ public class BotLogger {
 
 	/**
 	 * Log a message at the given log level (truncate enabled)
+	 *
+	 * @param msg the message to log
+	 * @param level the level to log at
 	 */
 	public void logAtLevel(String msg, Level level) {
 		logAtLevel(msg, level, true);
@@ -77,6 +87,10 @@ public class BotLogger {
 	/**
 	 * Log a message at the given log level (truncation optional). Also writes to an
 	 * external log.txt file.
+	 *
+	 * @param msg the message to log
+	 * @param level the level to log at
+	 * @param truncate whether to truncate this message or not
 	 */
 	public void logAtLevel(String msg, Level level, boolean truncate) {
 		if (truncate) {

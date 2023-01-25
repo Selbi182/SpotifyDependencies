@@ -3,7 +3,7 @@ package spotify.util.data;
 import java.util.Comparator;
 import java.util.List;
 
-import javax.annotation.Nonnull;
+import org.springframework.lang.NonNull;
 
 import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
 import se.michaelthelin.spotify.model_objects.specification.TrackSimplified;
@@ -48,7 +48,7 @@ public class AlbumTrackPair implements Comparable<AlbumTrackPair>, Comparator<Al
 	}
 
 	@Override
-	public int compareTo(@Nonnull AlbumTrackPair o) {
+	public int compareTo(@NonNull AlbumTrackPair o) {
 		return compare(this, o);
 	}
 
