@@ -1,4 +1,4 @@
-package de.selbi.spotify.api;
+package spotify.api;
 
 import java.awt.Desktop;
 import java.awt.HeadlessException;
@@ -11,9 +11,6 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import javax.annotation.PostConstruct;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
@@ -23,12 +20,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.wrapper.spotify.SpotifyApi;
-import com.wrapper.spotify.model_objects.credentials.AuthorizationCodeCredentials;
-
-import de.selbi.spotify.api.events.LoggedInEvent;
-import de.selbi.spotify.config.Config;
-import de.selbi.spotify.util.BotLogger;
+import spotify.api.events.LoggedInEvent;
+import spotify.config.Config;
+import spotify.util.BotLogger;
+import se.michaelthelin.spotify.SpotifyApi;
+import se.michaelthelin.spotify.model_objects.credentials.AuthorizationCodeCredentials;
 
 @Component
 @RestController
@@ -40,27 +36,23 @@ public class SpotifyApiAuthorization {
 
   private static final long LOGIN_TIMEOUT = 10;
 
-  @Autowired
-  private SpotifyApi spotifyApi;
+  private final SpotifyApi spotifyApi;
+  private final Config config;
+  private final BotLogger log;
+  private final ApplicationEventPublisher applicationEventPublisher;
 
-  @Autowired
-  private Config config;
-
-  @Autowired
-  private BotLogger log;
-
-  @Autowired
-  private ApplicationEventPublisher applicationEventPublisher;
-
-  @PostConstruct
-  private void initSpotifyCall() {
+  private SpotifyApiAuthorization(SpotifyApi spotifyApi, Config config, BotLogger botLogger, ApplicationEventPublisher applicationEventPublisher) {
+    this.spotifyApi = spotifyApi;
+    this.config = config;
+    this.log = botLogger;
+    this.applicationEventPublisher = applicationEventPublisher;
     SpotifyCall.spotifyApiAuthorization = this;
   }
 
   /////////////////////
 
   @EventListener(ApplicationReadyEvent.class)
-  private void initialLogin() {
+  public void initialLogin() {
     refresh();
     applicationEventPublisher.publishEvent(new LoggedInEvent(this));
   }
