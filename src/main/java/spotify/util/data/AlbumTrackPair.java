@@ -7,6 +7,7 @@ import org.springframework.lang.NonNull;
 
 import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
 import se.michaelthelin.spotify.model_objects.specification.TrackSimplified;
+import spotify.util.BotUtils;
 
 /**
  * Container class to map a simplified album by its simplified tracks
@@ -15,9 +16,13 @@ public class AlbumTrackPair implements Comparable<AlbumTrackPair>, Comparator<Al
 	private final AlbumSimplified album;
 	private final List<TrackSimplified> tracks;
 
-	public AlbumTrackPair(AlbumSimplified album, List<TrackSimplified> tracks) {
+	private AlbumTrackPair(AlbumSimplified album, List<TrackSimplified> tracks) {
 		this.album = album;
 		this.tracks = tracks;
+	}
+
+	public static AlbumTrackPair of(AlbumSimplified album, List<TrackSimplified> tracks) {
+		return new AlbumTrackPair(album, tracks);
 	}
 
 	public AlbumSimplified getAlbum() {
@@ -28,19 +33,20 @@ public class AlbumTrackPair implements Comparable<AlbumTrackPair>, Comparator<Al
 		return tracks;
 	}
 
+	public int trackCount() {
+		return tracks.size();
+	}
+
 	/////////////
 
 	private final static Comparator<AlbumTrackPair> COMPARATOR_ALBUM_GROUP = Comparator.comparing(atp -> atp.getAlbum().getAlbumGroup());
 	private final static Comparator<AlbumTrackPair> COMPARATOR_RELEASE_DATE = Comparator.comparing(atp -> atp.getAlbum().getReleaseDate());
 	private final static Comparator<AlbumTrackPair> COMPARATOR_TRACK_COUNT = Comparator.comparing(atp -> atp.getTracks().size(), Comparator.reverseOrder());
-	private final static Comparator<AlbumTrackPair> COMPARATOR_FIRST_ARTIST_NAME = Comparator.comparing(atp -> atp.getAlbum().getArtists()[0].getName(), Comparator.reverseOrder());
+	private final static Comparator<AlbumTrackPair> COMPARATOR_FIRST_ARTIST_NAME = Comparator.comparing(atp -> BotUtils.getFirstArtistName(atp.getAlbum()), Comparator.reverseOrder());
 	private final static Comparator<AlbumTrackPair> COMPARATOR_ALBUM_NAME = Comparator.comparing(atp -> atp.getAlbum().getName(), Comparator.reverseOrder());
 
-	private final static Comparator<AlbumTrackPair> ATP_COMPARATOR = COMPARATOR_ALBUM_GROUP
-		.thenComparing(COMPARATOR_RELEASE_DATE)
-		.thenComparing(COMPARATOR_TRACK_COUNT)
-		.thenComparing(COMPARATOR_FIRST_ARTIST_NAME)
-		.thenComparing(COMPARATOR_ALBUM_NAME);
+	private final static Comparator<AlbumTrackPair> ATP_COMPARATOR = COMPARATOR_ALBUM_GROUP.thenComparing(COMPARATOR_RELEASE_DATE).thenComparing(COMPARATOR_TRACK_COUNT).thenComparing(COMPARATOR_FIRST_ARTIST_NAME)
+			.thenComparing(COMPARATOR_ALBUM_NAME);
 
 	@Override
 	public int compare(AlbumTrackPair o1, AlbumTrackPair o2) {
@@ -58,11 +64,11 @@ public class AlbumTrackPair implements Comparable<AlbumTrackPair>, Comparator<Al
 			return super.toString();
 		}
 		return String.format("[%s] %s - %s (%s) <%d>",
-			album.getAlbumGroup().toString(),
-			album.getArtists()[0].getName(),
-			album.getName(),
-			album.getReleaseDate(),
-			tracks.size());
+				album.getAlbumGroup().toString(),
+				album.getArtists()[0].getName(),
+				album.getName(),
+				album.getReleaseDate(),
+				tracks.size());
 	}
 
 	@Override
@@ -90,6 +96,7 @@ public class AlbumTrackPair implements Comparable<AlbumTrackPair>, Comparator<Al
 			return false;
 		if (tracks == null) {
 			return other.tracks == null;
-		} else return tracks.equals(other.tracks);
+		} else
+			return tracks.equals(other.tracks);
 	}
 }

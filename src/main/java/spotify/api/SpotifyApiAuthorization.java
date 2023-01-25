@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import spotify.api.events.LoggedInEvent;
-import spotify.config.Config;
+import spotify.config.SpotifyApiConfig;
 import spotify.util.BotLogger;
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.model_objects.credentials.AuthorizationCodeCredentials;
@@ -32,16 +32,16 @@ public class SpotifyApiAuthorization {
 
   protected final static String LOGIN_CALLBACK_URI = "/login-callback";
 
-  private final static String SCOPES = "user-read-playback-position user-read-playback-state";
+  private final static String SCOPES = "user-read-playback-position user-read-playback-state user-read-private";
 
   private static final long LOGIN_TIMEOUT = 10;
 
   private final SpotifyApi spotifyApi;
-  private final Config config;
+  private final SpotifyApiConfig config;
   private final BotLogger log;
   private final ApplicationEventPublisher applicationEventPublisher;
 
-  private SpotifyApiAuthorization(SpotifyApi spotifyApi, Config config, BotLogger botLogger, ApplicationEventPublisher applicationEventPublisher) {
+  private SpotifyApiAuthorization(SpotifyApi spotifyApi, SpotifyApiConfig config, BotLogger botLogger, ApplicationEventPublisher applicationEventPublisher) {
     this.spotifyApi = spotifyApi;
     this.config = config;
     this.log = botLogger;

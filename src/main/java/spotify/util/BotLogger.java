@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class BotLogger {
-	private enum Level {
+	public enum Level {
 		DEBUG, INFO, WARNING, ERROR
 	}
 
@@ -130,7 +130,7 @@ public class BotLogger {
 	 * @param message the message
 	 * @return the truncated message
 	 */
-	private String truncateToEllipsis(String message) {
+	public String truncateToEllipsis(String message) {
 		if (message.length() <= MAX_LINE_LENGTH - ELLIPSIS.length()) {
 			return message;
 		}

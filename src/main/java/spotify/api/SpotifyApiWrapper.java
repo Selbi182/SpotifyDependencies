@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import spotify.config.Config;
+import spotify.config.SpotifyApiConfig;
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.SpotifyHttpManager;
 
@@ -16,9 +16,10 @@ public class SpotifyApiWrapper {
 	@Value("${server.port}")
 	private String serverPort;
 
-	private final Config config;
+	private final SpotifyApiConfig config;
 
-	SpotifyApiWrapper(Config config) {
+	@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
+	SpotifyApiWrapper(SpotifyApiConfig config) {
 		this.config = config;
 	}
 

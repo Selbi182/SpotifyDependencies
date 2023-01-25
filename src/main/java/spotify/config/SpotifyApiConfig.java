@@ -8,12 +8,9 @@ import java.util.Properties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.neovisionaries.i18n.CountryCode;
-
 @Configuration
-public class Config {
+public class SpotifyApiConfig {
 
-    private static final String MARKET = "market";
     private static final String REFRESH_TOKEN = "refresh_token";
     private static final String ACCESS_TOKEN = "access_token";
     private static final String CLIENT_SECRET = "client_secret";
@@ -62,25 +59,23 @@ public class Config {
      * @return the bot config
      */
     @Bean
-    public SpotifyBotConfig spotifyBotConfig() {
+    public OAuth2 spotifyBotConfig() {
         Properties properties = spotifyApiProperties();
 
-        SpotifyBotConfig config = new SpotifyBotConfig();
+        OAuth2 config = new OAuth2();
         config.setClientId(properties.getProperty(CLIENT_ID));
         config.setClientSecret(properties.getProperty(CLIENT_SECRET));
         config.setAccessToken(properties.getProperty(ACCESS_TOKEN));
         config.setRefreshToken(properties.getProperty(REFRESH_TOKEN));
-        config.setMarket(CountryCode.valueOf(properties.getProperty(MARKET)));
 
         return config;
     }
 
-    public static class SpotifyBotConfig {
+    public static class OAuth2 {
         private String clientId;
         private String clientSecret;
         private String accessToken;
         private String refreshToken;
-        private CountryCode market;
 
         public String getClientId() {
             return clientId;
@@ -114,17 +109,9 @@ public class Config {
             this.refreshToken = refreshToken;
         }
 
-        public CountryCode getMarket() {
-            return market;
-        }
-
-        public void setMarket(CountryCode market) {
-            this.market = market;
-        }
-
         @Override
         public String toString() {
-            return "SpotifyBotConfig [clientId=" + clientId + ", clientSecret=" + clientSecret + ", accessToken=" + accessToken + ", refreshToken=" + refreshToken + ", market=" + market + "]";
+            return "OAuth2 [clientId=" + clientId + ", clientSecret=" + clientSecret + ", accessToken=" + accessToken + ", refreshToken=" + refreshToken + "]";
         }
 
     }

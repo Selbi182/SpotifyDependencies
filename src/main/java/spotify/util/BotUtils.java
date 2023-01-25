@@ -1,6 +1,7 @@
 package spotify.util;
 
 import java.io.File;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -16,8 +17,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import se.michaelthelin.spotify.enums.AlbumGroup;
+import se.michaelthelin.spotify.enums.ModelObjectType;
+import se.michaelthelin.spotify.model_objects.IPlaylistItem;
+import se.michaelthelin.spotify.model_objects.specification.Album;
 import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
 import se.michaelthelin.spotify.model_objects.specification.ArtistSimplified;
+import se.michaelthelin.spotify.model_objects.specification.Image;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 import se.michaelthelin.spotify.model_objects.specification.TrackSimplified;
 
@@ -267,5 +272,148 @@ public final class BotUtils {
 	public static String getIdFromUri(String uri) {
 		String[] split = uri.split(":");
 		return split[split.length - 1];
+	}
+
+	/**
+	 * Find the release year of the track (which is in ISO format, so it's always the first four characters)
+	 *
+	 * @param track the track
+	 * @return the release year as string
+	 */
+	public static String findReleaseYear(Track track) {
+		if (track.getAlbum().getReleaseDate() != null) {
+			return track.getAlbum().getReleaseDate().substring(0, 4);
+		}
+		return null;
+	}
+
+	/**
+	 * Format the given time in milliseconds as mm:ss or hh:mm if larger than one hour
+	 *
+	 * @param timeInMs the time in milliseconds
+	 * @return the formatted time as string
+	 */
+	public static String formatTime(long timeInMs) {
+		Duration duration = Duration.ofMillis(timeInMs);
+		long hours = duration.toHours();
+		int minutesPart = duration.toMinutesPart();
+		if (hours > 0) {
+			return String.format("%d:%02d", hours, minutesPart);
+		} else {
+			int secondsPart = duration.toSecondsPart();
+			return String.format("%d:%02d", minutesPart, secondsPart);
+		}
+	}
+
+	/**
+	 * Find the largest image of a given image array
+	 *
+	 * @param images primitive array of the images to check
+	 * @return the largest image (or null, if no images were passed)
+	 */
+	public static String findLargestImage(Image[] images) {
+		if (images != null) {
+			Image largest = null;
+			for (Image img : images) {
+				if (largest == null || (img.getWidth() * img.getHeight()) > (largest.getWidth() * largest.getHeight())) {
+					largest = img;
+				}
+			}
+			return largest != null ? largest.getUrl() : null;
+		}
+		return null;
+	}
+
+	/**
+	 * Return true if any of the artists on this album match the given artistId
+	 *
+	 * @param album the album
+	 * @param artistId the artist ID
+	 * @return true if there is any match
+	 */
+	public static boolean anyArtistMatches(AlbumSimplified album, String artistId) {
+		for (ArtistSimplified artist : album.getArtists()) {
+			if (artist.getId() != null && artist.getId().equals(artistId)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Creates an identifier string of the album using the album group, the first artist's name, and the album name.
+	 *
+	 * @param as the album
+	 * @return the string in the format "albumgroup_firstartistname_albumname"
+	 */
+	public static String albumIdentifierString(AlbumSimplified as) {
+		return String.join("_", as.getAlbumGroup().getGroup(), BotUtils.strippedTitleIdentifier(BotUtils.getFirstArtistName(as)), BotUtils.strippedTitleIdentifier(as.getName())).toLowerCase();
+	}
+
+	/**
+	 * Creates a string that tries to be as normalized and generic as possible,
+	 * based on the given track or album. The name will be lowercased, stripped off
+	 * any white space and special characters, and anything in brackets such as
+	 * "feat.", "bonus track", "remastered" will be removed.
+	 *
+	 * @param title a string that is assumed to be the title of a track or an album
+	 * @return the stripped title
+	 */
+	public static String strippedTitleIdentifier(String title) {
+		String identifier = title
+				.toLowerCase()
+				.replaceAll(",", " ");
+
+		List<String> forbiddenWords =
+				List.of("anniversary.*", "bonus track", "deluxe.*", "special.*", "remaster.*", "explicit.*", "extended.*", "expansion.*",
+						"expanded.*", "cover.*", "original.*", "motion\\spicture.*", "re.?issue", "re.?record", "\\d{4}.*", "feat.*");
+
+		for (String word : forbiddenWords) {
+			identifier = identifier.replaceAll(word, "");
+		}
+
+		return identifier
+				//.replaceAll("\\(.+\\)", "")
+				.replaceAll("-.*", "")
+				.replaceAll("\\s+", "")
+				.replaceAll("\\W+", "");
+	}
+
+	/**
+	 * Convert a full album an album simplified. Any extra variables are thrown
+	 * away.
+	 *
+	 * @param album the album to convert
+	 * @return the converted album
+	 */
+	public static AlbumSimplified asAlbumSimplified(Album album) {
+		AlbumSimplified.Builder as = new AlbumSimplified.Builder();
+
+		as.setAlbumGroup(AlbumGroup.keyOf(album.getAlbumType().getType())); // Not exact but works
+		as.setAlbumType(album.getAlbumType());
+		as.setArtists(album.getArtists());
+		as.setAvailableMarkets(album.getAvailableMarkets());
+		as.setExternalUrls(album.getExternalUrls());
+		as.setHref(album.getHref());
+		as.setId(album.getId());
+		as.setImages(album.getImages());
+		as.setName(album.getName());
+		as.setReleaseDate(album.getReleaseDate());
+		as.setReleaseDatePrecision(album.getReleaseDatePrecision());
+		as.setRestrictions(null); // No alternative
+		// ModelObjectType missing
+		as.setUri(album.getUri());
+
+		return as.build();
+	}
+
+	/**
+	 * Check if the given playlist item is a track
+	 *
+	 * @param t the playlist item
+	 * @return true if it is
+	 */
+	public static boolean isTrack(IPlaylistItem t) {
+		return t.getType().equals(ModelObjectType.TRACK);
 	}
 }
