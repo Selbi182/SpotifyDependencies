@@ -325,6 +325,25 @@ public final class BotUtils {
 	}
 
 	/**
+	 * Find the smallest image of a given image array
+	 *
+	 * @param images primitive array of the images to check
+	 * @return the smallest image (or null, if no images were passed)
+	 */
+	public static String findSmallestImage(Image[] images) {
+		if (images != null) {
+			Image smallest = null;
+			for (Image img : images) {
+				if (smallest == null || (img.getWidth() * img.getHeight()) < (smallest.getWidth() * smallest.getHeight())) {
+					smallest = img;
+				}
+			}
+			return smallest != null ? smallest.getUrl() : null;
+		}
+		return null;
+	}
+
+	/**
 	 * Return true if any of the artists on this album match the given artistId
 	 *
 	 * @param album the album
