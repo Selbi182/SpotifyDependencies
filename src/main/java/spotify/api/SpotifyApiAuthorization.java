@@ -11,6 +11,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
@@ -20,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import spotify.api.events.LoggedInEvent;
+import spotify.api.events.SpotifyApiLoggedInEvent;
 import spotify.config.SpotifyApiConfig;
 import spotify.util.BotLogger;
 import se.michaelthelin.spotify.SpotifyApi;
@@ -29,10 +30,7 @@ import se.michaelthelin.spotify.model_objects.credentials.AuthorizationCodeCrede
 @Component
 @RestController
 public class SpotifyApiAuthorization {
-
-  protected final static String LOGIN_CALLBACK_URI = "/login-callback";
-
-  private final static String SCOPES = "user-read-playback-position user-read-playback-state user-read-private";
+  protected static final String LOGIN_CALLBACK_URI = "/login-callback";
 
   private static final long LOGIN_TIMEOUT = 10;
 
@@ -40,6 +38,9 @@ public class SpotifyApiAuthorization {
   private final SpotifyApiConfig config;
   private final BotLogger log;
   private final ApplicationEventPublisher applicationEventPublisher;
+
+  @Value("spotify.scopes")
+  private String scopes;
 
   private SpotifyApiAuthorization(SpotifyApi spotifyApi, SpotifyApiConfig config, BotLogger botLogger, ApplicationEventPublisher applicationEventPublisher) {
     this.spotifyApi = spotifyApi;
@@ -54,7 +55,7 @@ public class SpotifyApiAuthorization {
   @EventListener(ApplicationReadyEvent.class)
   public void initialLogin() {
     refresh();
-    applicationEventPublisher.publishEvent(new LoggedInEvent(this));
+    applicationEventPublisher.publishEvent(new SpotifyApiLoggedInEvent(this));
   }
 
   public String refresh() {
@@ -78,7 +79,7 @@ public class SpotifyApiAuthorization {
    */
   private void authenticate() {
     try {
-      URI uri = SpotifyCall.execute(spotifyApi.authorizationCodeUri().scope(SCOPES));
+      URI uri = SpotifyCall.execute(spotifyApi.authorizationCodeUri().scope(scopes));
       try {
         if (!Desktop.isDesktopSupported()) {
           throw new HeadlessException();
