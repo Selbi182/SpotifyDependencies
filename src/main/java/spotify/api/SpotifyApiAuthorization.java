@@ -39,7 +39,7 @@ public class SpotifyApiAuthorization {
   private final BotLogger log;
   private final ApplicationEventPublisher applicationEventPublisher;
 
-  @Value("spotify.scopes")
+  @Value("${spotify.scopes}")
   private String scopes;
 
   private SpotifyApiAuthorization(SpotifyApi spotifyApi, SpotifyApiConfig config, BotLogger botLogger, ApplicationEventPublisher applicationEventPublisher) {
