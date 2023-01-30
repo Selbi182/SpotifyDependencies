@@ -21,7 +21,7 @@ List<SavedTrack> yourSavedTracks = SpotifyCall.executePaging(spotifyApi.getUsers
 ## Installation
 
 ### Dependencies
-Add the repo and dependency in your `build.gradle`:
+Add the repository and dependency in your `build.gradle`:
 
 ```groovy
 repositories {
@@ -47,13 +47,13 @@ server.port=8080
 If this property is not set, your app will immediately halt on startup.
 
 ### Scopes
-Spotify requires your app to explicitely state which parts of their API you require access for. Some features are always accessable, while others require explicit permission from the user logging in. These must be set in the `application.properties` file as well as space-separate list:
+Spotify requires your app to explicitely state which parts of their API you require access for. Some features are always accessible, while others require explicit permission from the user logging in. These must be set in the `application.properties` file as well as space-separate list:
 
 ```
 spotify.scopes=user-read-playback-position user-read-playback-state user-read-private
 ```
 
-A full list of the available scopes can be founds [here](https://developer.spotify.com/documentation/general/guides/authorization/scopes).
+A full list of the available scopes can be found [here](https://developer.spotify.com/documentation/general/guides/authorization/scopes).
 
 ### Spotify Tokens
 To even be able to access the Spotify API, you first need to create an app on the [Spotify Web API Developer Dashboard](https://developer.spotify.com/dashboard/applications). Once that is done, put the *Client ID* and *Client Secret* into a file named `spotifybot.properties` (obviously shortened here):
@@ -81,7 +81,7 @@ Open it in your preferred browser (if it failed to do so by itself) and follow t
 
 You can double check if everything worked by looking into the `spotifybot.properties` file one more time, which should now have two new fields `access_token` and `refresh_token`. The access token will be automatically refreshed by this library on a periodic basis, so you don't need to worry about that.
 
-### Login Callboy
+### Login Callback
 To synchronize your app to wait for the login to be completed before any further business logic is run, a custom event called `SpotifyApiLoggedInEvent` is fired that can be intercepted anywhere you'd like:
 
 ```
