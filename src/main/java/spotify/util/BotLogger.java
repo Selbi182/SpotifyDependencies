@@ -131,10 +131,10 @@ public class BotLogger {
 	 * @return the truncated message
 	 */
 	public String truncateToEllipsis(String message) {
-		if (message.length() <= MAX_LINE_LENGTH - ELLIPSIS.length()) {
+		if (message.length() <= MAX_LINE_LENGTH) {
 			return message;
 		}
-		return message.substring(0, message.length() - ELLIPSIS.length()) + ELLIPSIS;
+		return message.substring(0, MAX_LINE_LENGTH) + ELLIPSIS;
 	}
 
 	///////////////////////
