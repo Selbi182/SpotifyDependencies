@@ -6,8 +6,8 @@ import java.util.List;
 
 import org.apache.hc.core5.http.ParseException;
 
+import se.michaelthelin.spotify.exceptions.detailed.BadRequestException;
 import se.michaelthelin.spotify.exceptions.detailed.NotFoundException;
-import spotify.util.BotUtils;
 import se.michaelthelin.spotify.exceptions.detailed.TooManyRequestsException;
 import se.michaelthelin.spotify.exceptions.detailed.UnauthorizedException;
 import se.michaelthelin.spotify.model_objects.specification.Paging;
@@ -15,6 +15,7 @@ import se.michaelthelin.spotify.model_objects.specification.PagingCursorbased;
 import se.michaelthelin.spotify.requests.IRequest;
 import se.michaelthelin.spotify.requests.data.IPagingCursorbasedRequestBuilder;
 import se.michaelthelin.spotify.requests.data.IPagingRequestBuilder;
+import spotify.util.BotUtils;
 
 public class SpotifyCall {
 
@@ -64,7 +65,7 @@ public class SpotifyCall {
 					int timeout = e.getRetryAfter();
 					long sleepMs = (timeout * RETRY_TIMEOUT_429 * attempt) + RETRY_TIMEOUT_429;
 					BotUtils.sneakySleep(sleepMs);
-				} catch (NotFoundException e) {
+				} catch (NotFoundException | BadRequestException e) {
 					break;
 				} catch (Exception e) {
 					BotUtils.sneakySleep(RETRY_TIMEOUT_GENERIC_ERROR);

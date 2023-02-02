@@ -63,12 +63,20 @@ public class SpotifyApiConfig {
         Properties properties = spotifyApiProperties();
 
         OAuth2 config = new OAuth2();
-        config.setClientId(properties.getProperty(CLIENT_ID));
-        config.setClientSecret(properties.getProperty(CLIENT_SECRET));
+        config.setClientId(getNotBlankProperty(properties, CLIENT_ID));
+        config.setClientSecret(getNotBlankProperty(properties, CLIENT_SECRET));
         config.setAccessToken(properties.getProperty(ACCESS_TOKEN));
         config.setRefreshToken(properties.getProperty(REFRESH_TOKEN));
 
         return config;
+    }
+
+    private String getNotBlankProperty(Properties properties, String propertyKey) {
+        String property = properties.getProperty(propertyKey);
+        if (property != null && !property.isBlank()) {
+            return property;
+        }
+        throw new IllegalStateException("Missing required field in spotifybot.properties: " + propertyKey);
     }
 
     public static class OAuth2 {

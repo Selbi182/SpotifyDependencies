@@ -21,11 +21,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import se.michaelthelin.spotify.SpotifyApi;
+import se.michaelthelin.spotify.model_objects.credentials.AuthorizationCodeCredentials;
+import se.michaelthelin.spotify.requests.authorization.authorization_code.AuthorizationCodeUriRequest;
 import spotify.api.events.SpotifyApiLoggedInEvent;
 import spotify.config.SpotifyApiConfig;
 import spotify.util.BotLogger;
-import se.michaelthelin.spotify.SpotifyApi;
-import se.michaelthelin.spotify.model_objects.credentials.AuthorizationCodeCredentials;
 
 @Component
 @RestController
@@ -39,7 +40,7 @@ public class SpotifyApiAuthorization {
   private final BotLogger log;
   private final ApplicationEventPublisher applicationEventPublisher;
 
-  @Value("${spotify.scopes}")
+  @Value("${spotify.scopes:#{null}}")
   private String scopes;
 
   private SpotifyApiAuthorization(SpotifyApi spotifyApi, SpotifyApiConfig config, BotLogger botLogger, ApplicationEventPublisher applicationEventPublisher) {
@@ -79,7 +80,11 @@ public class SpotifyApiAuthorization {
    */
   private void authenticate() {
     try {
-      URI uri = SpotifyCall.execute(spotifyApi.authorizationCodeUri().scope(scopes));
+      AuthorizationCodeUriRequest.Builder authorizationCodeUriBuilder = spotifyApi.authorizationCodeUri();
+      if (scopes != null && !scopes.isBlank()) {
+        authorizationCodeUriBuilder.scope(scopes);
+      }
+      URI uri = SpotifyCall.execute(authorizationCodeUriBuilder);
       try {
         if (!Desktop.isDesktopSupported()) {
           throw new HeadlessException();
