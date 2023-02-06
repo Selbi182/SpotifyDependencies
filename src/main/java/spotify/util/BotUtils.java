@@ -50,6 +50,11 @@ public final class BotUtils {
 	private final static Pattern REMIX_MATCHER = Pattern.compile("\\b(RMX|REMIX+|REMIXES)\\b", Pattern.CASE_INSENSITIVE);
 	private final static double REMIX_SONG_COUNT_PERCENTAGE_THRESHOLD = 0.67;
 	private final static double REMIX_SONG_COUNT_PERCENTAGE_THRESHOLD_LESSER = 0.2;
+
+	private final static List<String> VERBOSE_RELEASE_WORDS = List.of(
+			"anniversary.*", "bonus track", "deluxe.*", "special.*", "remaster.*", "explicit.*", "extended.*", "expansion.*",
+			"expanded.*", "cover.*", "original.*", "motion\\spicture.*", "re.?issue", "re.?record", "\\d{4}.*", "feat.*");
+
 	/**
 	 * Utility class
 	 */
@@ -406,18 +411,10 @@ public final class BotUtils {
 		String identifier = title
 				.toLowerCase()
 				.replaceAll(",", " ");
-
-		List<String> forbiddenWords =
-				List.of("anniversary.*", "bonus track", "deluxe.*", "special.*", "remaster.*", "explicit.*", "extended.*", "expansion.*",
-						"expanded.*", "cover.*", "original.*", "motion\\spicture.*", "re.?issue", "re.?record", "\\d{4}.*", "feat.*");
-
-		for (String word : forbiddenWords) {
+		for (String word : VERBOSE_RELEASE_WORDS) {
 			identifier = identifier.replaceAll(word, "");
 		}
-
 		return identifier
-				//.replaceAll("\\(.+\\)", "")
-				.replaceAll("-.*", "")
 				.replaceAll("\\s+", "")
 				.replaceAll("\\W+", "");
 	}

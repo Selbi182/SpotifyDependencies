@@ -4,12 +4,8 @@ import java.awt.Desktop;
 import java.awt.HeadlessException;
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpConnectTimeoutException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -43,6 +39,11 @@ public class SpotifyApiAuthorization {
   @Value("${spotify.scopes:#{null}}")
   private String scopes;
 
+  /**
+   * Authentication mutex to be used while the user is being prompted to log in
+   */
+  private static final Semaphore lock = new Semaphore(0);
+
   private SpotifyApiAuthorization(SpotifyApi spotifyApi, SpotifyApiConfig config, BotLogger botLogger, ApplicationEventPublisher applicationEventPublisher) {
     this.spotifyApi = spotifyApi;
     this.config = config;
@@ -62,18 +63,13 @@ public class SpotifyApiAuthorization {
   public String refresh() {
     try {
       return authorizationCodeRefresh();
-    } catch (HttpConnectTimeoutException e) {
+    } catch (IllegalStateException e) {
       authenticate();
       return refresh();
     }
   }
 
   ///////////////////////
-
-  /**
-   * Authentication mutex to be used while the user is being prompted to log in
-   */
-  private static final Semaphore lock = new Semaphore(0);
 
   /**
    * Authentication process
@@ -124,18 +120,19 @@ public class SpotifyApiAuthorization {
    *
    * @return the new access token
    */
-  private String authorizationCodeRefresh() throws HttpConnectTimeoutException {
+  private String authorizationCodeRefresh() throws IllegalStateException {
     try {
-      AuthorizationCodeCredentials acc = Executors.newSingleThreadExecutor()
-          .submit(() -> SpotifyCall.execute(spotifyApi.authorizationCodeRefresh()))
-          .get(LOGIN_TIMEOUT, TimeUnit.SECONDS);
-      updateTokens(acc);
-      return acc.getAccessToken();
-    } catch (InterruptedException | ExecutionException | TimeoutException e) {
-      String msg = "Failed to automatically refresh access token after " + LOGIN_TIMEOUT
-          + " seconds. A manual (re-)login might be required.";
+      if (spotifyApi.getAccessToken() != null && spotifyApi.getRefreshToken() != null) {
+        AuthorizationCodeCredentials acc = SpotifyCall.execute(spotifyApi.authorizationCodeRefresh());
+        updateTokens(acc);
+        return acc.getAccessToken();
+      } else {
+        throw new IllegalStateException("Access and/or Refresh Tokens missing");
+      }
+    } catch (Exception e) {
+      String msg = "Failed to automatically login in. A manual (re-)login is required.";
       log.error(msg);
-      throw new HttpConnectTimeoutException(msg);
+      throw e;
     }
   }
 
