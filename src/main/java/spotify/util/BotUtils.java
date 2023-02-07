@@ -448,6 +448,36 @@ public final class BotUtils {
 	}
 
 	/**
+	 * Convert a TrackSimplified to a full Track object. Any attributes missing in the simplified version
+	 * will become null after the conversion.
+	 *
+	 * @param ts the TrackSimplified object
+	 * @return the converted Track object
+	 */
+	public static Track asTrack(TrackSimplified ts) {
+		Track.Builder trackBuilder = new Track.Builder();
+
+		trackBuilder.setArtists(ts.getArtists());
+		trackBuilder.setAvailableMarkets(ts.getAvailableMarkets());
+		trackBuilder.setDiscNumber(ts.getDiscNumber());
+		trackBuilder.setDurationMs(ts.getDurationMs());
+		trackBuilder.setExplicit(ts.getIsExplicit());
+		trackBuilder.setExternalUrls(ts.getExternalUrls());
+		trackBuilder.setHref(ts.getHref());
+		trackBuilder.setId(ts.getId());
+		trackBuilder.setIsPlayable(ts.getIsPlayable());
+		trackBuilder.setLinkedFrom(ts.getLinkedFrom());
+		trackBuilder.setName(ts.getName());
+		trackBuilder.setPreviewUrl(ts.getPreviewUrl());
+		trackBuilder.setTrackNumber(ts.getTrackNumber());
+		trackBuilder.setPreviewUrl(ts.getPreviewUrl());
+		trackBuilder.setType(ts.getType());
+		trackBuilder.setUri(ts.getUri());
+
+		return trackBuilder.build();
+	}
+
+	/**
 	 * Check if the given playlist item is a track
 	 *
 	 * @param t the playlist item
