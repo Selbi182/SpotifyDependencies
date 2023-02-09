@@ -93,7 +93,7 @@ public class SpotifyApiAuthorization {
       if (!lock.tryAcquire(LOGIN_TIMEOUT, TimeUnit.MINUTES)) {
         throw new InterruptedException();
       }
-    } catch (InterruptedException | BotException e) {
+    } catch (InterruptedException | SpotifyApiException e) {
       log.error("Login timeout! Shutting down application in case of a Spotify Web API anomaly!");
       System.exit(182);
     }

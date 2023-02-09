@@ -10,7 +10,7 @@ import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
 import se.michaelthelin.spotify.model_objects.specification.AudioFeatures;
 import se.michaelthelin.spotify.model_objects.specification.TrackSimplified;
-import spotify.api.BotException;
+import spotify.api.SpotifyApiException;
 import spotify.api.SpotifyCall;
 import spotify.util.BotLogger;
 import spotify.util.data.AlbumTrackPair;
@@ -35,7 +35,7 @@ public class TrackService {
 	 * @param albums the albums to get the tracks from
 	 * @return the result in a list of AlbumTrackPairs
 	 */
-	public List<AlbumTrackPair> getTracksOfAlbums(List<AlbumSimplified> albums) throws BotException {
+	public List<AlbumTrackPair> getTracksOfAlbums(List<AlbumSimplified> albums) throws SpotifyApiException {
 		List<AlbumTrackPair> albumTrackPairs = new ArrayList<>();
 		for (AlbumSimplified as : albums) {
 			AlbumTrackPair tracksOfSingleAlbum = getTracksOfSingleAlbum(as);
@@ -50,7 +50,7 @@ public class TrackService {
 	 * @param album the album
 	 * @return the AlbumTrackPair with the results
 	 */
-	public AlbumTrackPair getTracksOfSingleAlbum(AlbumSimplified album) throws BotException {
+	public AlbumTrackPair getTracksOfSingleAlbum(AlbumSimplified album) throws SpotifyApiException {
 		List<TrackSimplified> tracksOfAlbum = SpotifyCall.executePaging(spotifyApi
 			.getAlbumsTracks(album.getId())
 			.limit(MAX_PLAYLIST_TRACK_FETCH_LIMIT));
@@ -68,7 +68,7 @@ public class TrackService {
 			String[] trackIds = tracks.stream().map(TrackSimplified::getId).toArray(String[]::new);
 			AudioFeatures[] audioFeatures = SpotifyCall.execute(spotifyApi.getAudioFeaturesForSeveralTracks(trackIds));
 			return Arrays.asList(audioFeatures);
-		} catch (BotException e) {
+		} catch (SpotifyApiException e) {
 			log.stackTrace(e);
 		}
 		return null;

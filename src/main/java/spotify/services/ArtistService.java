@@ -11,7 +11,7 @@ import com.google.common.collect.Lists;
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.enums.ModelObjectType;
 import se.michaelthelin.spotify.model_objects.specification.Artist;
-import spotify.api.BotException;
+import spotify.api.SpotifyApiException;
 import spotify.api.SpotifyCall;
 
 @Service
@@ -44,7 +44,7 @@ public class ArtistService {
 	 *
 	 * @return the followed artists by the current user
 	 */
-	public List<Artist> getFollowedArtists() throws BotException {
+	public List<Artist> getFollowedArtists() throws SpotifyApiException {
 		return SpotifyCall.executePaging(spotifyApi
 			.getUsersFollowedArtists(ModelObjectType.ARTIST)
 			.limit(MAX_ARTIST_FETCH_LIMIT));

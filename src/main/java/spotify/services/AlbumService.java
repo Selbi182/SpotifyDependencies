@@ -12,7 +12,7 @@ import com.neovisionaries.i18n.CountryCode;
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.enums.AlbumGroup;
 import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
-import spotify.api.BotException;
+import spotify.api.SpotifyApiException;
 import spotify.api.SpotifyCall;
 
 @Service
@@ -35,7 +35,7 @@ public class AlbumService {
 	 * @param market the market
 	 * @return the albums
 	 */
-	public List<AlbumSimplified> getAllAlbumsOfArtists(List<String> artists, Set<AlbumGroup> enabledAlbumGroups, CountryCode market) throws BotException {
+	public List<AlbumSimplified> getAllAlbumsOfArtists(List<String> artists, Set<AlbumGroup> enabledAlbumGroups, CountryCode market) throws SpotifyApiException {
 		String albumGroupString = createAlbumGroupString(enabledAlbumGroups);
 
 		// I've tried just about anything you can imagine. Parallel streams, threads,
@@ -72,7 +72,7 @@ public class AlbumService {
 	 * @param market the market to check for
 	 * @return the albums
 	 */
-	public List<AlbumSimplified> getAlbumIdsOfSingleArtist(String artistId, String albumGroups, CountryCode market) throws BotException {
+	public List<AlbumSimplified> getAlbumIdsOfSingleArtist(String artistId, String albumGroups, CountryCode market) throws SpotifyApiException {
 		return SpotifyCall.executePaging(spotifyApi
 			.getArtistsAlbums(artistId)
 			.market(market)

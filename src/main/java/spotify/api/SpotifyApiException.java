@@ -5,17 +5,21 @@ package spotify.api;
  * the Spotify Web API, most commonly (but not limited to) the
  * {@link se.michaelthelin.spotify.exceptions.SpotifyWebApiException}.
  */
-public class BotException extends RuntimeException {
+public class SpotifyApiException extends RuntimeException {
   private static final long serialVersionUID = 1108719662083800510L;
 
-  private final Exception baseException;
+  private final Exception nestedException;
 
-  public BotException(Exception e) {
-    this.baseException = e;
+  public SpotifyApiException(Exception e) {
+    this.nestedException = e;
+  }
+
+  public Exception getNestedException() {
+    return nestedException;
   }
 
   @Override
   public String toString() {
-    return baseException.toString();
+    return nestedException.toString();
   }
 }

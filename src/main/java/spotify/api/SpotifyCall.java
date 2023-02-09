@@ -44,9 +44,9 @@ public class SpotifyCall {
 	 * @param <BT>           Builder (e.g. Album.Builder, Playlist.Builder...)
 	 * @param requestBuilder the basic, not built request builder
 	 * @return the result item
-	 * @throws BotException if request didn't complete within 10 attempts
+	 * @throws SpotifyApiException if request didn't complete within 10 attempts
 	 */
-	public static <T, BT extends IRequest.Builder<T, ?>> T execute(IRequest.Builder<T, BT> requestBuilder) throws BotException {
+	public static <T, BT extends IRequest.Builder<T, ?>> T execute(IRequest.Builder<T, BT> requestBuilder) throws SpotifyApiException {
 		Exception finalException = null;
 
 		for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
@@ -58,7 +58,7 @@ public class SpotifyCall {
 					finalException = ex;
 					throw ex;
 				} catch (ParseException | IOException e) {
-					throw new BotException(e);
+					throw new SpotifyApiException(e);
 				} catch (UnauthorizedException e) {
 					String newAccessToken = spotifyApiAuthorization.refresh();
 					requestBuilder.setHeader("Authorization", "Bearer " + newAccessToken);
@@ -75,7 +75,7 @@ public class SpotifyCall {
 		}
 
 		finalException.printStackTrace();
-		throw new BotException(finalException);
+		throw new SpotifyApiException(finalException);
 	}
 
 	/**
@@ -87,7 +87,7 @@ public class SpotifyCall {
 	 * @param pagingRequestBuilder the basic, not built request paging builder
 	 * @return the fully exhausted list of result items
 	 */
-	public static <T, BT extends IRequest.Builder<Paging<T>, ?>> List<T> executePaging(IPagingRequestBuilder<T, BT> pagingRequestBuilder) throws BotException {
+	public static <T, BT extends IRequest.Builder<Paging<T>, ?>> List<T> executePaging(IPagingRequestBuilder<T, BT> pagingRequestBuilder) throws SpotifyApiException {
 		List<T> resultList = new ArrayList<>();
 		Paging<T> paging = null;
 		do {
@@ -112,7 +112,7 @@ public class SpotifyCall {
 	 * @return the fully exhausted list of result items
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T, A, BT extends IRequest.Builder<PagingCursorbased<T>, ?>> List<T> executePaging(IPagingCursorbasedRequestBuilder<T, A, BT> pagingRequestBuilder) throws BotException {
+	public static <T, A, BT extends IRequest.Builder<PagingCursorbased<T>, ?>> List<T> executePaging(IPagingCursorbasedRequestBuilder<T, A, BT> pagingRequestBuilder) throws SpotifyApiException {
 		List<T> resultList = new ArrayList<>();
 		PagingCursorbased<T> paging = null;
 		do {
