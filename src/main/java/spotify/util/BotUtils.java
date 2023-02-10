@@ -224,6 +224,16 @@ public final class BotUtils {
 	/**
 	 * Returns the name of the first artist of this album (usually the only one)
 	 * 
+	 * @param a the album
+	 * @return the name of the first artist
+	 */
+	public static String getFirstArtistName(Album a) {
+		return a.getArtists()[0].getName();
+	}
+
+	/**
+	 * Returns the name of the first artist of this album (usually the only one)
+	 *
 	 * @param as the album
 	 * @return the name of the first artist
 	 */
