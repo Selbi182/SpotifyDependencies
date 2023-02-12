@@ -4,6 +4,7 @@ import java.awt.Desktop;
 import java.awt.HeadlessException;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -124,6 +125,11 @@ public class SpotifyApiAuthorization {
     try {
       if (spotifyApi.getAccessToken() != null && spotifyApi.getRefreshToken() != null) {
         AuthorizationCodeCredentials acc = SpotifyCall.execute(spotifyApi.authorizationCodeRefresh());
+        Set<String> requiredScopes = Set.of(scopes.split(" "));
+        Set<String> accScopes = Set.of(acc.getScope().split(" "));
+        if (!accScopes.containsAll(requiredScopes)) {
+          throw new IllegalStateException("New required scopes have been added. A re-login is required");
+        }
         updateTokens(acc);
         return acc.getAccessToken();
       } else {
