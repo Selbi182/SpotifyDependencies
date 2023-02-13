@@ -80,6 +80,15 @@ public final class BotUtils {
 	}
 
 	/**
+	 * Return the given list of scopes as a Spotify-compatible, space-separated string
+	 * @param scopes the scopes
+	 * @return the Spotify-compatible string
+	 */
+	public static String buildScopes(List<String> scopes) {
+		return String.join(" ", scopes);
+	}
+
+	/**
 	 * Check if the given old date is still within the allowed timeout window
 	 * 
 	 * @param baseDate       the date to check "now" against

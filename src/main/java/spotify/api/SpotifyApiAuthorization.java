@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
@@ -24,6 +23,7 @@ import se.michaelthelin.spotify.requests.authorization.authorization_code.Author
 import spotify.api.events.SpotifyApiLoggedInEvent;
 import spotify.config.SpotifyApiConfig;
 import spotify.util.BotLogger;
+import spotify.util.BotUtils;
 
 @Component
 @RestController
@@ -34,20 +34,19 @@ public class SpotifyApiAuthorization {
 
   private final SpotifyApi spotifyApi;
   private final SpotifyApiConfig config;
+  private final SpotifyApiScopes spotifyApiScopes;
   private final BotLogger log;
   private final ApplicationEventPublisher applicationEventPublisher;
-
-  @Value("${spotify.scopes:#{null}}")
-  private String scopes;
 
   /**
    * Authentication mutex to be used while the user is being prompted to log in
    */
   private static final Semaphore lock = new Semaphore(0);
 
-  private SpotifyApiAuthorization(SpotifyApi spotifyApi, SpotifyApiConfig config, BotLogger botLogger, ApplicationEventPublisher applicationEventPublisher) {
+  private SpotifyApiAuthorization(SpotifyApi spotifyApi, SpotifyApiConfig config, SpotifyApiScopes spotifyApiScopes, BotLogger botLogger, ApplicationEventPublisher applicationEventPublisher) {
     this.spotifyApi = spotifyApi;
     this.config = config;
+    this.spotifyApiScopes = spotifyApiScopes;
     this.log = botLogger;
     this.applicationEventPublisher = applicationEventPublisher;
     SpotifyCall.spotifyApiAuthorization = this;
@@ -78,7 +77,8 @@ public class SpotifyApiAuthorization {
   private void authenticate() {
     try {
       AuthorizationCodeUriRequest.Builder authorizationCodeUriBuilder = spotifyApi.authorizationCodeUri();
-      if (scopes != null && !scopes.isBlank()) {
+      String scopes = BotUtils.buildScopes(spotifyApiScopes.requiredScopes());
+      if (!scopes.isBlank()) {
         authorizationCodeUriBuilder.scope(scopes);
       }
       URI uri = SpotifyCall.execute(authorizationCodeUriBuilder);
@@ -125,7 +125,7 @@ public class SpotifyApiAuthorization {
     try {
       if (spotifyApi.getAccessToken() != null && spotifyApi.getRefreshToken() != null) {
         AuthorizationCodeCredentials acc = SpotifyCall.execute(spotifyApi.authorizationCodeRefresh());
-        Set<String> requiredScopes = Set.of(scopes.split(" "));
+        Set<String> requiredScopes = Set.copyOf(spotifyApiScopes.requiredScopes());
         Set<String> accScopes = Set.of(acc.getScope().split(" "));
         if (!accScopes.containsAll(requiredScopes)) {
           throw new IllegalStateException("New required scopes have been added. A re-login is required");
