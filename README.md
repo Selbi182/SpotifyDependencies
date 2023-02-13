@@ -31,7 +31,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'spotify:spotify-dependencies:1.3.0'
+    implementation 'spotify:spotify-dependencies:1.5.0'
 }
 ```
 
@@ -47,13 +47,29 @@ server.port=8080
 If this property is not set, your app will immediately halt on startup.
 
 ### Scopes
-Spotify requires your app to explicitely state which parts of their API you require access for. Some features are always accessible, while others require explicit permission from the user logging in. These must be set in the `application.properties` file as well as space-separate list:
+Spotify requires your app to explicitely state which parts of their API you require access for. Some features are always accessible, while others require explicit permission from the user logging in. These must be set by creating a visible Spring component that implements `SpotifyApiScopes`, with the method `requiredScopes()` returning a list of Strings with the scopes you want.
 
-```
-spotify.scopes=user-read-playback-position user-read-playback-state user-read-private
+For example:
+
+```java
+@Component
+public static class SpotifyMyCustomAppScopes implements SpotifyApiScopes {
+
+    @Override
+    public List<String> requiredScopes() {
+        return List.of(
+            "user-read-playback-position",
+            "user-read-playback-state",
+            "user-read-currently-playing",
+            "user-read-private"
+        );
+    }
+}
 ```
 
 A full list of the available scopes can be found [here](https://developer.spotify.com/documentation/general/guides/authorization/scopes).
+
+If you don't require any special scopes, simply create an implementation that returns an empty list.
 
 ### Spotify Tokens
 To even be able to access the Spotify API, you first need to create an app on the [Spotify Web API Developer Dashboard](https://developer.spotify.com/dashboard/applications). Once that is done, put the *Client ID* and *Client Secret* into a file named `spotifybot.properties` (obviously shortened here):
@@ -84,7 +100,7 @@ You can double check if everything worked by looking into the `spotifybot.proper
 ### Login Callback
 To synchronize your app to wait for the login to be completed before any further business logic is run, a custom event called `SpotifyApiLoggedInEvent` is fired that can be intercepted anywhere you'd like:
 
-```
+```java
 @EventListener(SpotifyApiLoggedInEvent.class)
 public void loggedInEvent() {
     System.out.println("Successfully logged into the Spotify API!");
