@@ -3,6 +3,7 @@ package spotify.util;
 import java.io.File;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -91,6 +92,18 @@ public final class BotUtils {
 	/**
 	 * Check if the given old date is still within the allowed timeout window
 	 * 
+	 * @param baseDate       the date to check "now" against
+	 * @param timeoutInHours the timeout in hours
+	 * @return true if is within timeout window
+	 */
+	public static boolean isWithinTimeoutWindow(LocalDateTime baseDate, int timeoutInHours) {
+		LocalDateTime currentTime = LocalDateTime.now();
+		return currentTime.minus(timeoutInHours, ChronoUnit.HOURS).isBefore(baseDate);
+	}
+
+	/**
+	 * Check if the given old date is still within the allowed timeout window
+	 *
 	 * @param baseDate       the date to check "now" against
 	 * @param timeoutInHours the timeout in hours
 	 * @return true if is within timeout window
