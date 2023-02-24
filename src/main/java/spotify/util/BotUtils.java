@@ -334,16 +334,39 @@ public final class BotUtils {
 	}
 
 	/**
+	 * Find the release year of the album (which is in ISO format, so it's always the first four characters)
+	 *
+	 * @param album the album
+	 * @return the release year as string
+	 */
+	public static String findReleaseYear(Album album) {
+		if (album.getReleaseDate() != null) {
+			return album.getReleaseDate().substring(0, 4);
+		}
+		return null;
+	}
+
+	/**
+	 * Find the release year of the album (which is in ISO format, so it's always the first four characters)
+	 *
+	 * @param album the album
+	 * @return the release year as string
+	 */
+	public static String findReleaseYear(AlbumSimplified album) {
+		if (album.getReleaseDate() != null) {
+			return album.getReleaseDate().substring(0, 4);
+		}
+		return null;
+	}
+
+	/**
 	 * Find the release year of the track (which is in ISO format, so it's always the first four characters)
 	 *
 	 * @param track the track
 	 * @return the release year as string
 	 */
 	public static String findReleaseYear(Track track) {
-		if (track.getAlbum().getReleaseDate() != null) {
-			return track.getAlbum().getReleaseDate().substring(0, 4);
-		}
-		return null;
+		return findReleaseYear(track.getAlbum());
 	}
 
 	/**
