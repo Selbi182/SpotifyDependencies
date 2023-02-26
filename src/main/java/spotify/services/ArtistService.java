@@ -6,13 +6,12 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.Lists;
-
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.enums.ModelObjectType;
 import se.michaelthelin.spotify.model_objects.specification.Artist;
 import spotify.api.SpotifyApiException;
 import spotify.api.SpotifyCall;
+import spotify.util.SpotifyUtils;
 
 @Service
 public class ArtistService {
@@ -28,14 +27,19 @@ public class ArtistService {
 	/**
 	 * Get several artists
 	 *
-	 * @param ids artist IDs
+	 * @param artistIds artist IDs
 	 * @return the artists
 	 */
-	public List<Artist> getArtists(List<String> ids) {
+	public List<Artist> getArtists(List<String> artistIds) {
 		List<Artist> allArtists = new ArrayList<>();
-		for (List<String> artistsPartition : Lists.partition(ids, MAX_ARTIST_FETCH_LIMIT)) {
-			allArtists.addAll(Arrays.asList(SpotifyCall.execute(spotifyApi.getSeveralArtists(artistsPartition.toArray(String[]::new)))));
+
+		List<List<String>> artistIdsPartitioned = SpotifyUtils.partitionList(artistIds, MAX_ARTIST_FETCH_LIMIT);
+		for (List<String> artistIdPartition : artistIdsPartitioned) {
+			String[] artistIdsArray = artistIdPartition.toArray(String[]::new);
+			Artist[] artists = SpotifyCall.execute(spotifyApi.getSeveralArtists(artistIdsArray));
+			allArtists.addAll(Arrays.asList(artists));
 		}
+
 		return allArtists;
 	}
 

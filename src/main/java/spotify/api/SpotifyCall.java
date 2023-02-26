@@ -16,7 +16,7 @@ import se.michaelthelin.spotify.model_objects.specification.PagingCursorbased;
 import se.michaelthelin.spotify.requests.IRequest;
 import se.michaelthelin.spotify.requests.data.IPagingCursorbasedRequestBuilder;
 import se.michaelthelin.spotify.requests.data.IPagingRequestBuilder;
-import spotify.util.BotUtils;
+import spotify.util.SpotifyUtils;
 
 public class SpotifyCall {
 
@@ -65,11 +65,11 @@ public class SpotifyCall {
 				} catch (TooManyRequestsException e) {
 					int timeout = e.getRetryAfter();
 					long sleepMs = (timeout * RETRY_TIMEOUT_429 * attempt) + RETRY_TIMEOUT_429;
-					BotUtils.sneakySleep(sleepMs);
+					SpotifyUtils.sneakySleep(sleepMs);
 				} catch (NotFoundException | BadRequestException | ForbiddenException e) {
 					break;
 				} catch (Exception e) {
-					BotUtils.sneakySleep(RETRY_TIMEOUT_GENERIC_ERROR);
+					SpotifyUtils.sneakySleep(RETRY_TIMEOUT_GENERIC_ERROR);
 				}
 			}
 		}
@@ -95,7 +95,7 @@ public class SpotifyCall {
 				pagingRequestBuilder.offset(paging.getOffset() + paging.getLimit());
 			}
 			paging = execute(pagingRequestBuilder);
-			BotUtils.addToListIfNotBlank(paging.getItems(), resultList);
+			SpotifyUtils.addToListIfNotBlank(paging.getItems(), resultList);
 		} while (paging.getNext() != null);
 		return resultList;
 	}
@@ -125,7 +125,7 @@ public class SpotifyCall {
 				}
 			}
 			paging = execute(pagingRequestBuilder);
-			BotUtils.addToListIfNotBlank(paging.getItems(), resultList);
+			SpotifyUtils.addToListIfNotBlank(paging.getItems(), resultList);
 		} while (paging.getNext() != null);
 		return resultList;
 	}

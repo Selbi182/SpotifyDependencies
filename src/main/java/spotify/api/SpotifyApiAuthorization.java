@@ -22,8 +22,8 @@ import se.michaelthelin.spotify.model_objects.credentials.AuthorizationCodeCrede
 import se.michaelthelin.spotify.requests.authorization.authorization_code.AuthorizationCodeUriRequest;
 import spotify.api.events.SpotifyApiLoggedInEvent;
 import spotify.config.SpotifyApiConfig;
-import spotify.util.BotLogger;
-import spotify.util.BotUtils;
+import spotify.util.SpotifyLogger;
+import spotify.util.SpotifyUtils;
 
 @Component
 @RestController
@@ -35,7 +35,7 @@ public class SpotifyApiAuthorization {
   private final SpotifyApi spotifyApi;
   private final SpotifyApiConfig config;
   private final SpotifyApiScopes spotifyApiScopes;
-  private final BotLogger log;
+  private final SpotifyLogger log;
   private final ApplicationEventPublisher applicationEventPublisher;
 
   /**
@@ -43,11 +43,11 @@ public class SpotifyApiAuthorization {
    */
   private static final Semaphore lock = new Semaphore(0);
 
-  private SpotifyApiAuthorization(SpotifyApi spotifyApi, SpotifyApiConfig config, SpotifyApiScopes spotifyApiScopes, BotLogger botLogger, ApplicationEventPublisher applicationEventPublisher) {
+  private SpotifyApiAuthorization(SpotifyApi spotifyApi, SpotifyApiConfig config, SpotifyApiScopes spotifyApiScopes, SpotifyLogger spotifyLogger, ApplicationEventPublisher applicationEventPublisher) {
     this.spotifyApi = spotifyApi;
     this.config = config;
     this.spotifyApiScopes = spotifyApiScopes;
-    this.log = botLogger;
+    this.log = spotifyLogger;
     this.applicationEventPublisher = applicationEventPublisher;
     SpotifyCall.spotifyApiAuthorization = this;
   }
@@ -77,7 +77,7 @@ public class SpotifyApiAuthorization {
   private void authenticate() {
     try {
       AuthorizationCodeUriRequest.Builder authorizationCodeUriBuilder = spotifyApi.authorizationCodeUri();
-      String scopes = BotUtils.buildScopes(spotifyApiScopes.requiredScopes());
+      String scopes = SpotifyUtils.buildScopes(spotifyApiScopes.requiredScopes());
       if (!scopes.isBlank()) {
         authorizationCodeUriBuilder.scope(scopes);
       }

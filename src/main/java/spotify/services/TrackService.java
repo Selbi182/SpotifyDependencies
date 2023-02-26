@@ -12,7 +12,7 @@ import se.michaelthelin.spotify.model_objects.specification.AudioFeatures;
 import se.michaelthelin.spotify.model_objects.specification.TrackSimplified;
 import spotify.api.SpotifyApiException;
 import spotify.api.SpotifyCall;
-import spotify.util.BotLogger;
+import spotify.util.SpotifyLogger;
 import spotify.util.data.AlbumTrackPair;
 
 @Service
@@ -21,11 +21,11 @@ public class TrackService {
 	private final static int MAX_PLAYLIST_TRACK_FETCH_LIMIT = 50;
 
 	private final SpotifyApi spotifyApi;
-	private final BotLogger log;
+	private final SpotifyLogger log;
 
-	TrackService(SpotifyApi spotifyApi, BotLogger botLogger) {
+	TrackService(SpotifyApi spotifyApi, SpotifyLogger spotifyLogger) {
 		this.spotifyApi = spotifyApi;
-		this.log = botLogger;
+		this.log = spotifyLogger;
 	}
 
 	/**

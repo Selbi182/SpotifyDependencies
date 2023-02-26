@@ -23,15 +23,17 @@ import se.michaelthelin.spotify.enums.ModelObjectType;
 import se.michaelthelin.spotify.model_objects.IPlaylistItem;
 import se.michaelthelin.spotify.model_objects.specification.Album;
 import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
+import se.michaelthelin.spotify.model_objects.specification.Artist;
 import se.michaelthelin.spotify.model_objects.specification.ArtistSimplified;
 import se.michaelthelin.spotify.model_objects.specification.AudioFeatures;
 import se.michaelthelin.spotify.model_objects.specification.Image;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 import se.michaelthelin.spotify.model_objects.specification.TrackSimplified;
+import spotify.api.SpotifyCall;
 import spotify.services.TrackService;
 import spotify.util.data.AlbumTrackPair;
 
-public final class BotUtils {
+public final class SpotifyUtils {
 	private final static double EPSILON = 0.01;
 
 	private final static Pattern EP_MATCHER = Pattern.compile("\\bE\\W?P\\W?\\b");
@@ -59,7 +61,7 @@ public final class BotUtils {
 	/**
 	 * Utility class
 	 */
-	private BotUtils() {
+	private SpotifyUtils() {
 	}
 
 	///////
@@ -142,22 +144,13 @@ public final class BotUtils {
 	}
 
 	/**
-	 * Remove all items from this list that are either <i>null</i> or "null" (a
-	 * literal String)
-	 * 
-	 * @param collection the collection
+	 * Check if the given String is either <i>null</i> or "null" (a literal String)
+	 *
+	 * @param string the string
+	 * @return true if the given string qualifies as null string
 	 */
-	public static void removeNullStrings(Collection<String> collection) {
-		collection.removeIf(e -> e == null || e.equalsIgnoreCase("null"));
-	}
-
-	/**
-	 * Remove all items from this collection that are null
-	 * 
-	 * @param collection the collection
-	 */
-	public static void removeNulls(Collection<?> collection) {
-		collection.removeIf(Objects::isNull);
+	public static boolean isNullString(String string) {
+		return string == null || string.equalsIgnoreCase("null");
 	}
 
 	/**
@@ -448,14 +441,14 @@ public final class BotUtils {
 	 * @return the string in the format "albumgroup_firstartistname_albumname"
 	 */
 	public static String albumIdentifierString(AlbumSimplified as) {
-		String artistPart = BotUtils.strippedTitleIdentifier(BotUtils.getFirstArtistName(as));
-		String releasePart = BotUtils.strippedTitleIdentifier(as.getName());
+		String artistPart = SpotifyUtils.strippedTitleIdentifier(SpotifyUtils.getFirstArtistName(as));
+		String releasePart = SpotifyUtils.strippedTitleIdentifier(as.getName());
 		return String.join("_", as.getAlbumGroup().getGroup(), artistPart, releasePart).toLowerCase();
 	}
 
 	/**
 	 * Creates a string that tries to be as normalized and generic as possible,
-	 * based on the given track or album. The name will be lowercased, stripped off
+	 * based on the given track or album. The name will be lower-cased, stripped off
 	 * any white space and special characters, and anything in brackets such as
 	 * "feat.", "bonus track", "remastered" will be removed.
 	 *
@@ -571,10 +564,10 @@ public final class BotUtils {
 			return true;
 		}
 		if (trackCount >= EP_SONG_COUNT_THRESHOLD_LESSER && totalDurationMs >= EP_DURATION_THRESHOLD_LESSER) {
-			String strippedAlbumTitle = BotUtils.strippedTitleIdentifier(albumTitle);
+			String strippedAlbumTitle = SpotifyUtils.strippedTitleIdentifier(albumTitle);
 			return tracks.stream()
 					.map(TrackSimplified::getName)
-					.map(BotUtils::strippedTitleIdentifier)
+					.map(SpotifyUtils::strippedTitleIdentifier)
 					.noneMatch(t -> t.equalsIgnoreCase(strippedAlbumTitle));
 		}
 		return false;
@@ -634,7 +627,7 @@ public final class BotUtils {
 	 * have "REMIX" in their titles (one word, case-insensitive). Exception: Remix is
 	 * in the title, in which case the threshold is only 1/5.
 	 *
-	 * @param albumTrackPair the ALbumTrackPair
+	 * @param albumTrackPair the AlbumTrackPair
 	 * @return true if the given release qualifies as Remix
 	 */
 	public static boolean isRemix(AlbumTrackPair albumTrackPair) {
@@ -649,5 +642,24 @@ public final class BotUtils {
 			return remixPercentage > REMIX_SONG_COUNT_PERCENTAGE_THRESHOLD_LESSER;
 		}
 		return remixPercentage > REMIX_SONG_COUNT_PERCENTAGE_THRESHOLD;
+	}
+
+	/**
+	 * Split the given list into smaller partitions, each part limited by the given partitionSize.
+	 * The last part may be smaller.
+	 *
+	 * @param inputList the input list to partition
+	 * @param partitionSize the size for each individual partition
+	 * @param <T> the type of the list's objects
+	 * @return the partitioned lists inside a collector list
+	 */
+	public static <T> List<List<T>> partitionList(List<T> inputList, int partitionSize) {
+		List<List<T>> partitionList = new ArrayList<>();
+		for (int i = 0; i < inputList.size(); i += partitionSize) {
+			int upperBound = Math.min(inputList.size(), i + partitionSize);
+			List<T> subList = inputList.subList(i, upperBound);
+			partitionList.add(subList);
+		}
+		return partitionList;
 	}
 }

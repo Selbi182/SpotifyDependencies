@@ -16,15 +16,18 @@ import java.util.List;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-public class BotLogger {
+public class SpotifyLogger {
 	public enum Level {
 		DEBUG, INFO, WARNING, ERROR
 	}
 
-	private final static String LOG_FILE_PATH = "./log.txt";
+	@Value("${spotify.log.path:#{null}}")
+	private String logFilePath;
+
 	private final static int DEFAULT_LOG_READ_LINES = 50;
 
 	private final static int MAX_LINE_LENGTH = 160;
@@ -33,7 +36,7 @@ public class BotLogger {
 
 	private final static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-	private final Logger log = LoggerFactory.getLogger(BotLogger.class);
+	private final Logger log = LoggerFactory.getLogger(SpotifyLogger.class);
 
 	//////////////////////
 	// Base Logging
@@ -126,7 +129,7 @@ public class BotLogger {
 
 	/**
 	 * Chop off the message if it exceeds the maximum line length of 160 characters
-	 * 
+	 *
 	 * @param message the message
 	 * @return the truncated message
 	 */
@@ -139,65 +142,77 @@ public class BotLogger {
 
 	///////////////////////
 
+	public boolean isLogEnabled() {
+		return logFilePath != null;
+	}
+
 	public boolean clearLog() {
-		File logFile = new File(LOG_FILE_PATH);
-		return logFile.delete();
+		if (isLogEnabled()) {
+			File logFile = new File(logFilePath);
+			return logFile.delete();
+		}
+		return false;
 	}
 
 	private void writeToExternalLog(String message) throws IOException {
-		File logFile = new File(LOG_FILE_PATH);
-		if (!logFile.exists()) {
-			if (!logFile.createNewFile()) {
-				throw new IOException("Couldn't create log file");
+		if (isLogEnabled()) {
+			File logFile = new File(logFilePath);
+			if (!logFile.exists()) {
+				if (!logFile.createNewFile()) {
+					throw new IOException("Couldn't create log file");
+				}
 			}
-		}
-		String logMessage = String.format("[%s] %s", DATE_FORMAT.format(Date.from(Instant.now())), message);
-		if (logFile.canWrite()) {
-			BufferedWriter bw = new BufferedWriter(new FileWriter(logFile, true));
-			bw.write(logMessage);
-			bw.write('\n');
-			bw.close();
-		} else {
-			throw new IOException("Log file is currently locked, likely because it is being written to. Try again.");
+			String logMessage = String.format("[%s] %s", DATE_FORMAT.format(Date.from(Instant.now())), message);
+			if (logFile.canWrite()) {
+				BufferedWriter bw = new BufferedWriter(new FileWriter(logFile, true));
+				bw.write(logMessage);
+				bw.write('\n');
+				bw.close();
+			} else {
+				throw new IOException("Log file is currently locked, likely because it is being written to. Try again.");
+			}
 		}
 	}
 
 	/**
 	 * Return the content of the default log file (<code>./spring.log</code>).
-	 * 
+	 *
 	 * @param limit (optional) maximum number of lines to read from the top of the
 	 *              log (default: 50); Use -1 to read the entire file
 	 * @return a list of strings representing a line of logging
 	 * @throws IOException on a read error
 	 */
 	public List<String> readLog(Integer limit) throws IOException {
-		File logFile = new File(LOG_FILE_PATH);
-		if (logFile.exists()) {
-			if (logFile.canRead()) {
-				if (limit == null) {
-					limit = DEFAULT_LOG_READ_LINES;
-				} else if (limit < 0) {
-					limit = Integer.MAX_VALUE;
-				}
-				try {
-					List<String> logFileLines = Files.readAllLines(logFile.toPath(), StandardCharsets.UTF_8);
-					return logFileLines.subList(Math.max(0, logFileLines.size() - limit), logFileLines.size());
-				} catch (IOException e) {
-					throw new IOException("Failed to read log file (malformed encoding?): " + e);
+		if (isLogEnabled()) {
+			File logFile = new File(logFilePath);
+			if (logFile.exists()) {
+				if (logFile.canRead()) {
+					if (limit == null) {
+						limit = DEFAULT_LOG_READ_LINES;
+					} else if (limit < 0) {
+						limit = Integer.MAX_VALUE;
+					}
+					try {
+						List<String> logFileLines = Files.readAllLines(logFile.toPath(), StandardCharsets.UTF_8);
+						return logFileLines.subList(Math.max(0, logFileLines.size() - limit), logFileLines.size());
+					} catch (IOException e) {
+						throw new IOException("Failed to read log file (malformed encoding?): " + e);
+					}
+				} else {
+					throw new IOException("Log file is currently locked, likely because it is being written to. Try again.");
 				}
 			} else {
-				throw new IOException("Log file is currently locked, likely because it is being written to. Try again.");
+				throw new IOException("Couldn't find log file under expected location " + logFile.getAbsolutePath());
 			}
-		} else {
-			throw new IOException("Couldn't find log file under expected location " + logFile.getAbsolutePath());
 		}
+		return List.of();
 	}
 
 	//////////////////////
 
 	/**
 	 * Log and print the given exception's stack trace
-	 * 
+	 *
 	 * @param e the exception
 	 */
 	public void stackTrace(Exception e) {
