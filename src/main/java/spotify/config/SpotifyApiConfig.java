@@ -1,5 +1,6 @@
 package spotify.config;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -11,10 +12,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SpotifyApiConfig {
 
-    private static final String REFRESH_TOKEN = "refresh_token";
-    private static final String ACCESS_TOKEN = "access_token";
-    private static final String CLIENT_SECRET = "client_secret";
     private static final String CLIENT_ID = "client_id";
+    private static final String CLIENT_SECRET = "client_secret";
+    private static final String ACCESS_TOKEN = "access_token";
+    private static final String REFRESH_TOKEN = "refresh_token";
 
     private static final String PROPERTIES_FILE = "./spotifybot.properties";
 
@@ -41,16 +42,29 @@ public class SpotifyApiConfig {
     @Bean
     public Properties spotifyApiProperties() {
         try {
-            FileReader reader = new FileReader(PROPERTIES_FILE);
-            Properties properties = new Properties();
-            properties.load(reader);
-            return properties;
+            File propertiesFile = new File(PROPERTIES_FILE);
+            if (propertiesFile.exists()) {
+                FileReader reader = new FileReader(PROPERTIES_FILE);
+                Properties properties = new Properties();
+                properties.load(reader);
+                return properties;
+            } else {
+                String clientIdEnv = System.getenv(CLIENT_ID);
+                String clientSecretEnv = System.getenv(CLIENT_SECRET);
+                if (clientIdEnv != null && clientSecretEnv != null) {
+                    Properties properties = new Properties();
+                    properties.setProperty(CLIENT_ID, clientIdEnv);
+                    properties.setProperty(CLIENT_SECRET, clientSecretEnv);
+                    return properties;
+                }
+            }
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("Failed to read " + PROPERTIES_FILE + ". Terminating!");
             System.exit(1);
             return null;
         }
+        throw new IllegalStateException(String.format("Failed to read %s and didn't find environment variables '%s' and '%s' as backup. Terminating!", PROPERTIES_FILE, CLIENT_ID, CLIENT_SECRET));
     }
 
     /**

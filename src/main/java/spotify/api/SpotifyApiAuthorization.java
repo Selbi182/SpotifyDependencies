@@ -34,7 +34,7 @@ public class SpotifyApiAuthorization {
 
   private final SpotifyApi spotifyApi;
   private final SpotifyApiConfig config;
-  private final SpotifyApiScopes spotifyApiScopes;
+  private final SpotifyDependenciesSettings spotifyDependenciesSettings;
   private final SpotifyLogger log;
   private final ApplicationEventPublisher applicationEventPublisher;
 
@@ -43,10 +43,10 @@ public class SpotifyApiAuthorization {
    */
   private static final Semaphore lock = new Semaphore(0);
 
-  private SpotifyApiAuthorization(SpotifyApi spotifyApi, SpotifyApiConfig config, SpotifyApiScopes spotifyApiScopes, SpotifyLogger spotifyLogger, ApplicationEventPublisher applicationEventPublisher) {
+  private SpotifyApiAuthorization(SpotifyApi spotifyApi, SpotifyApiConfig config, SpotifyDependenciesSettings spotifyDependenciesSettings, SpotifyLogger spotifyLogger, ApplicationEventPublisher applicationEventPublisher) {
     this.spotifyApi = spotifyApi;
     this.config = config;
-    this.spotifyApiScopes = spotifyApiScopes;
+    this.spotifyDependenciesSettings = spotifyDependenciesSettings;
     this.log = spotifyLogger;
     this.applicationEventPublisher = applicationEventPublisher;
     SpotifyCall.spotifyApiAuthorization = this;
@@ -77,7 +77,7 @@ public class SpotifyApiAuthorization {
   private void authenticate() {
     try {
       AuthorizationCodeUriRequest.Builder authorizationCodeUriBuilder = spotifyApi.authorizationCodeUri();
-      String scopes = SpotifyUtils.buildScopes(spotifyApiScopes.requiredScopes());
+      String scopes = SpotifyUtils.buildScopes(spotifyDependenciesSettings.requiredScopes());
       if (!scopes.isBlank()) {
         authorizationCodeUriBuilder.scope(scopes);
       }
@@ -125,7 +125,7 @@ public class SpotifyApiAuthorization {
     try {
       if (spotifyApi.getAccessToken() != null && spotifyApi.getRefreshToken() != null) {
         AuthorizationCodeCredentials acc = SpotifyCall.execute(spotifyApi.authorizationCodeRefresh());
-        Set<String> requiredScopes = Set.copyOf(spotifyApiScopes.requiredScopes());
+        Set<String> requiredScopes = Set.copyOf(spotifyDependenciesSettings.requiredScopes());
         Set<String> accScopes = Set.of(acc.getScope().split(" "));
         if (!accScopes.containsAll(requiredScopes)) {
           throw new IllegalStateException("New required scopes have been added. A re-login is required");

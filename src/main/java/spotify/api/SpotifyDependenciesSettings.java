@@ -2,7 +2,7 @@ package spotify.api;
 
 import java.util.List;
 
-public interface SpotifyApiScopes {
+public interface SpotifyDependenciesSettings {
 
   /**
    * List of required Spotify API scopes for your app. Create a new class that extends this interface
@@ -11,4 +11,13 @@ public interface SpotifyApiScopes {
    * @return the list of required scopes
    */
   List<String> requiredScopes();
+
+  /**
+   * The server port to use for this application. If none is specified, 8080 will be used.
+   *
+   * @return the server port
+   */
+  default int port() {
+    return 8080;
+  }
 }

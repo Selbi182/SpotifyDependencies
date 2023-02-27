@@ -2,25 +2,24 @@ package spotify.api;
 
 import java.net.URI;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import spotify.config.SpotifyApiConfig;
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.SpotifyHttpManager;
+import spotify.config.SpotifyApiConfig;
+import spotify.spring.SpringPortConfig;
 
 @Configuration
 public class SpotifyApiWrapper {
 
-	@Value("${server.port}")
-	private String serverPort;
-
 	private final SpotifyApiConfig config;
+	private final SpringPortConfig springPortConfig;
 
 	@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-	SpotifyApiWrapper(SpotifyApiConfig config) {
+	SpotifyApiWrapper(SpotifyApiConfig config, SpringPortConfig springPortConfig) {
 		this.config = config;
+		this.springPortConfig = springPortConfig;
 	}
 
 	/**
@@ -43,8 +42,7 @@ public class SpotifyApiWrapper {
 	
 	private URI generateRedirectUri() {
 		String localhost = "http://localhost:";
-		int port = Integer.parseInt(serverPort);
 		String loginCallbackUri = SpotifyApiAuthorization.LOGIN_CALLBACK_URI;
-		return SpotifyHttpManager.makeUri(localhost + port + loginCallbackUri);
+		return SpotifyHttpManager.makeUri(localhost + springPortConfig.getPort() + loginCallbackUri);
 	}
 }
