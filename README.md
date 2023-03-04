@@ -31,7 +31,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'spotify:spotify-dependencies:1.5.1'
+    implementation 'spotify:spotify-dependencies:1.6.4'
 }
 ```
 
