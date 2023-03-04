@@ -136,7 +136,7 @@ public class SpotifyApiAuthorization {
         throw new IllegalStateException("Access and/or Refresh Tokens missing");
       }
     } catch (Exception e) {
-      String msg = "Failed to automatically login in. A manual (re-)login is required.";
+      String msg = "Failed to automatically login. A manual (re-)login is required.";
       log.error(msg);
       throw e;
     }
