@@ -82,14 +82,17 @@ public class SpotifyApiAuthorization {
         authorizationCodeUriBuilder.scope(scopes);
       }
       URI uri = SpotifyCall.execute(authorizationCodeUriBuilder);
+
+      log.info("Spotify authorization URL: " + uri);
+      log.info("Trying to open URL in browser...");
       try {
+        System.setProperty("java.awt.headless", "false"); // required because Spring forces headless mode otherwise
         if (!Desktop.isDesktopSupported()) {
           throw new HeadlessException();
         }
         Desktop.getDesktop().browse(uri);
       } catch (IOException | HeadlessException e) {
-        log.warning("Couldn't open browser window. Please log in at this URL:");
-        System.out.println(uri.toString());
+        log.warning("Couldn't open browser window! Please copy-paste the authorization URL manually into your browser and follow the steps");
       }
       if (!lock.tryAcquire(LOGIN_TIMEOUT, TimeUnit.MINUTES)) {
         throw new InterruptedException();
