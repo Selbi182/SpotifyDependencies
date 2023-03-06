@@ -16,8 +16,9 @@ import java.util.List;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import spotify.api.SpotifyDependenciesSettings;
 
 @Component
 public class SpotifyLogger {
@@ -25,9 +26,7 @@ public class SpotifyLogger {
 		DEBUG, INFO, WARNING, ERROR
 	}
 
-	@Value("${spotify.log.path:#{null}}")
-	private String logFilePath;
-
+	private final static String LOG_FILE_NAME = "log.txt";
 	private final static int DEFAULT_LOG_READ_LINES = 50;
 
 	private final static int MAX_LINE_LENGTH = 160;
@@ -37,6 +36,14 @@ public class SpotifyLogger {
 	private final static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	private final Logger log = LoggerFactory.getLogger(SpotifyLogger.class);
+
+	private File logFile;
+
+	public SpotifyLogger(SpotifyDependenciesSettings spotifyDependenciesSettings) {
+		if (spotifyDependenciesSettings.enableExternalLogging()) {
+			this.logFile = new File(spotifyDependenciesSettings.configFilesBase(), LOG_FILE_NAME);
+		}
+	}
 
 	//////////////////////
 	// Base Logging
@@ -96,6 +103,19 @@ public class SpotifyLogger {
 	 * @param truncate whether to truncate this message or not
 	 */
 	public void logAtLevel(String msg, Level level, boolean truncate) {
+		logAtLevel(msg, level, truncate, true);
+	}
+
+	/**
+	 * Log a message at the given log level (truncation optional). Also writes to an
+	 * external log.txt file.
+	 *
+	 * @param msg the message to log
+	 * @param level the level to log at
+	 * @param truncate whether to truncate this message or not
+	 * @param writeToExternalLog whether to write to the external log or not (must first be enabled)
+	 */
+	public void logAtLevel(String msg, Level level, boolean truncate, boolean writeToExternalLog) {
 		if (truncate) {
 			msg = truncateToEllipsis(msg);
 		}
@@ -113,10 +133,12 @@ public class SpotifyLogger {
 				log.error(msg);
 				break;
 		}
-		try {
-			writeToExternalLog(msg);
-		} catch (IOException e) {
-			e.printStackTrace();
+		if (writeToExternalLog) {
+			try {
+				writeToExternalLog(msg);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -142,21 +164,19 @@ public class SpotifyLogger {
 
 	///////////////////////
 
-	public boolean isLogEnabled() {
-		return logFilePath != null;
+	public boolean isExternalLoggingEnabled() {
+		return logFile != null;
 	}
 
 	public boolean clearLog() {
-		if (isLogEnabled()) {
-			File logFile = new File(logFilePath);
+		if (isExternalLoggingEnabled()) {
 			return logFile.delete();
 		}
 		return false;
 	}
 
 	private void writeToExternalLog(String message) throws IOException {
-		if (isLogEnabled()) {
-			File logFile = new File(logFilePath);
+		if (isExternalLoggingEnabled()) {
 			if (!logFile.exists()) {
 				if (!logFile.createNewFile()) {
 					throw new IOException("Couldn't create log file");
@@ -183,8 +203,7 @@ public class SpotifyLogger {
 	 * @throws IOException on a read error
 	 */
 	public List<String> readLog(Integer limit) throws IOException {
-		if (isLogEnabled()) {
-			File logFile = new File(logFilePath);
+		if (isExternalLoggingEnabled()) {
 			if (logFile.exists()) {
 				if (logFile.canRead()) {
 					if (limit == null) {

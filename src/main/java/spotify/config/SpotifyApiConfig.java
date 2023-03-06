@@ -9,15 +9,23 @@ import java.util.Properties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import spotify.api.SpotifyDependenciesSettings;
+
 @Configuration
 public class SpotifyApiConfig {
-
     private static final String CLIENT_ID = "client_id";
     private static final String CLIENT_SECRET = "client_secret";
     private static final String ACCESS_TOKEN = "access_token";
     private static final String REFRESH_TOKEN = "refresh_token";
 
     private static final String PROPERTIES_FILE = "./spotifybot.properties";
+
+    private final File propertiesFile;
+
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
+    SpotifyApiConfig(SpotifyDependenciesSettings spotifyDependenciesSettings) {
+        this.propertiesFile = new File(spotifyDependenciesSettings.configFilesBase(), PROPERTIES_FILE);
+    }
 
     /**
      * Update the access and refresh tokens, both in the config object and
@@ -33,7 +41,7 @@ public class SpotifyApiConfig {
 
         spotifyApiProperties().setProperty(ACCESS_TOKEN, accessToken);
         spotifyApiProperties().setProperty(REFRESH_TOKEN, refreshToken);
-        spotifyApiProperties().store(new FileOutputStream(PROPERTIES_FILE), null);
+        spotifyApiProperties().store(new FileOutputStream(propertiesFile), null);
     }
 
     ////////////////////
@@ -42,9 +50,8 @@ public class SpotifyApiConfig {
     @Bean
     public Properties spotifyApiProperties() {
         try {
-            File propertiesFile = new File(PROPERTIES_FILE);
             if (propertiesFile.exists()) {
-                FileReader reader = new FileReader(PROPERTIES_FILE);
+                FileReader reader = new FileReader(propertiesFile);
                 Properties properties = new Properties();
                 properties.load(reader);
                 return properties;
@@ -60,11 +67,11 @@ public class SpotifyApiConfig {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            System.out.println("Failed to read " + PROPERTIES_FILE + ". Terminating!");
+            System.out.println("Failed to read " + propertiesFile + ". Terminating!");
             System.exit(1);
             return null;
         }
-        throw new IllegalStateException(String.format("Failed to read %s and didn't find environment variables '%s' and '%s' as backup. Terminating!", PROPERTIES_FILE, CLIENT_ID, CLIENT_SECRET));
+        throw new IllegalStateException(String.format("Failed to read %s and didn't find environment variables '%s' and '%s' as backup. Terminating!", propertiesFile, CLIENT_ID, CLIENT_SECRET));
     }
 
     /**
