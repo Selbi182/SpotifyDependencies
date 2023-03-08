@@ -84,17 +84,15 @@ public class SpotifyApiAuthorization {
       URI uri = SpotifyCall.execute(authorizationCodeUriBuilder);
 
       log.info("Spotify authorization URL: ");
-      System.out.println(uri); // must be println to avoid truncation
-      log.info("Trying to open URL in browser...");
+      log.logAtLevel(uri.toString(), SpotifyLogger.Level.INFO, false); // to avoid truncation
+      log.info("Trying to open authorization URL in browser...");
       try {
-        System.setProperty("java.awt.headless", "false"); // required because Spring forces headless mode otherwise
         if (!Desktop.isDesktopSupported()) {
           throw new HeadlessException();
         }
         Desktop.getDesktop().browse(uri);
       } catch (Throwable e) { // must be Throwable because some systems get an UnsatisfiedLinkError if AWT is missing (not just an exception)
-        System.setProperty("java.awt.headless", "true");
-        log.warning("Couldn't open browser window! Please copy-paste the authorization URL manually into your browser and follow the steps");
+        log.warning("Couldn't open browser window! Please copy-paste the authorization URL manually into your browser and follow the login steps");
       }
       if (!lock.tryAcquire(LOGIN_TIMEOUT, TimeUnit.MINUTES)) {
         throw new InterruptedException();
