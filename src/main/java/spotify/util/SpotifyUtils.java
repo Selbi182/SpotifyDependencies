@@ -1,6 +1,9 @@
 package spotify.util;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -8,7 +11,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -18,18 +20,19 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+
 import se.michaelthelin.spotify.enums.AlbumGroup;
 import se.michaelthelin.spotify.enums.ModelObjectType;
 import se.michaelthelin.spotify.model_objects.IPlaylistItem;
 import se.michaelthelin.spotify.model_objects.specification.Album;
 import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
-import se.michaelthelin.spotify.model_objects.specification.Artist;
 import se.michaelthelin.spotify.model_objects.specification.ArtistSimplified;
 import se.michaelthelin.spotify.model_objects.specification.AudioFeatures;
 import se.michaelthelin.spotify.model_objects.specification.Image;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 import se.michaelthelin.spotify.model_objects.specification.TrackSimplified;
-import spotify.api.SpotifyCall;
 import spotify.services.TrackService;
 import spotify.util.data.AlbumTrackPair;
 
@@ -661,5 +664,50 @@ public final class SpotifyUtils {
 			partitionList.add(subList);
 		}
 		return partitionList;
+	}
+
+	/**
+	 * Returns just the ID of a full Spotify URL. Example:
+	 *
+	 * <pre>https://open.spotify.com/track/2hJQeZMzZ7ijgQT6I7b8Hz?si=J3g-NfAuShS34IOTayJgDQ</pre>
+	 * Becomes:
+	 * <pre>2hJQeZMzZ7ijgQT6I7b8Hz</pre>
+	 *
+	 * @param spotifyUrl the Spotify URL as String
+	 * @return the ID as String
+	 * @throws MalformedURLException on an illegal URL
+	 */
+	public static String getIdFromSpotifyUrl(String spotifyUrl) throws MalformedURLException {
+		URL url = new URL(spotifyUrl);
+		String path = url.getPath();
+		return path.substring(path.lastIndexOf('/') + 1);
+	}
+
+	/**
+	 * Returns the full URL of a given shortened Spotify URL by following its redirection. Example:
+	 *
+	 * <pre>https://spotify.link/iyAqlLTP3xb</pre>
+	 * Becomes:
+	 * <pre>https://open.spotify.com/track/2hJQeZMzZ7ijgQT6I7b8Hz</pre>
+	 * Plus a bunch of other parameters that will likely be of little use.
+	 *
+	 * @param shortSpotifyUrl the shortened Spotify URL
+	 * @return the full URL as String
+	 * @throws IOException if the URL is malformed or the connection failed
+	 */
+	public static String getFullUrlFromShortSpotifyUrl(String shortSpotifyUrl) throws IOException {
+		Connection.Response execute = Jsoup.connect(shortSpotifyUrl).followRedirects(true).execute();
+		return execute.url().toString();
+	}
+
+	/**
+	 * Returns true if the given String is a short Spotify URL. Or more formally,
+	 * if it starts with <code>https://spotify.link/</code>
+	 *
+	 * @param spotifyUrl the Spotify URL
+	 * @return true if it's a short URL
+	 */
+	public static boolean isShortSpotifyUrl(String spotifyUrl) {
+		return spotifyUrl.startsWith("https://spotify.link/");
 	}
 }
