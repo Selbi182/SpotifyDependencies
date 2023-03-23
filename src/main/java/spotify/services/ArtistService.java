@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.enums.ModelObjectType;
 import se.michaelthelin.spotify.model_objects.specification.Artist;
+import se.michaelthelin.spotify.model_objects.specification.Paging;
 import spotify.api.SpotifyApiException;
 import spotify.api.SpotifyCall;
 import spotify.util.SpotifyUtils;
@@ -52,5 +53,26 @@ public class ArtistService {
 		return SpotifyCall.executePaging(spotifyApi
 			.getUsersFollowedArtists(ModelObjectType.ARTIST)
 			.limit(MAX_ARTIST_FETCH_LIMIT));
+	}
+
+	/**
+	 * Search for the given artist name and return up to 50 results (ordered from most to least relevant).
+	 *
+	 * @param searchArtistString the artist string to search for
+	 * @return the results (up to 50)
+	 */
+	public List<Artist> searchArtists(String searchArtistString) {
+		Paging<Artist> execute = SpotifyCall.execute(spotifyApi.searchArtists(searchArtistString).limit(MAX_ARTIST_FETCH_LIMIT));
+		return Arrays.asList(execute.getItems());
+	}
+
+	/**
+	 * Search for the given artist name and return ALL results (ordered from most to least relevant).
+	 *
+	 * @param searchArtistString the artist string to search for
+	 * @return the results
+	 */
+	public List<Artist> searchAllArtists(String searchArtistString) {
+		return SpotifyCall.executePaging(spotifyApi.searchArtists(searchArtistString).limit(MAX_ARTIST_FETCH_LIMIT));
 	}
 }

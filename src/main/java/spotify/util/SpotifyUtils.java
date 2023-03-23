@@ -1,5 +1,7 @@
 package spotify.util;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -10,6 +12,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -19,6 +22,8 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.imageio.ImageIO;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -709,5 +714,25 @@ public final class SpotifyUtils {
 	 */
 	public static boolean isShortSpotifyUrl(String spotifyUrl) {
 		return spotifyUrl.startsWith("https://spotify.link/");
+	}
+
+	/**
+	 * Download the given image URL and return the payload as JPEG encoded in Base64.
+	 *
+	 * @param imageUrl the URL to the image
+	 * @return the base64-encoded string of the image
+	 */
+	public static String toBase64Image(String imageUrl) {
+		try {
+			URL url = new URL(imageUrl);
+			BufferedImage img = ImageIO.read(url);
+			ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+			if (ImageIO.write(img, "jpeg", byteStream)) {
+				return Base64.getEncoder().encodeToString(byteStream.toByteArray());
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 }

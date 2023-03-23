@@ -41,7 +41,7 @@ public class SpotifyOptimizedExecutorService {
   }
 
   /**
-   * Accepts a list of callables producing, all producing items for the same listed result,
+   * Accepts a list of callables producing, all producing items for the same result,
    * in a multi-threaded manner optimized for Spotify's API (more specifically: the maximum
    * throughput with the minimal amount of 429 errors).
    *
@@ -51,7 +51,35 @@ public class SpotifyOptimizedExecutorService {
    * @param <T> the resulting type
    * @return the full list of results
    */
-  public <T> List<T> executeAndWait(List<Callable<List<T>>> callables) {
+  public <T> List<T> executeAndWait(List<Callable<T>> callables) {
+    List<Future<T>> futures = new ArrayList<>();
+    for (Callable<T> callable : callables) {
+      futures.add(executorService.submit(callable));
+    }
+    List<T> allResults = new ArrayList<>();
+    for (Future<T> future : futures) {
+      try {
+        T result = future.get();
+        allResults.add(result);
+      } catch (InterruptedException | ExecutionException e) {
+        e.printStackTrace();
+      }
+    }
+    return allResults;
+  }
+
+  /**
+   * Accepts a list of callables, all producing items for the same listed result,
+   * in a multi-threaded manner optimized for Spotify's API (more specifically: the maximum
+   * throughput with the minimal amount of 429 errors).
+   *
+   * This method blocks until all results have been acquired.
+   *
+   * @param callables the list of callables
+   * @param <T> the resulting type
+   * @return the full list of results
+   */
+  public <T> List<T> executeAndWaitList(List<Callable<List<T>>> callables) {
     List<Future<List<T>>> futures = new ArrayList<>();
     for (Callable<List<T>> callable : callables) {
       futures.add(executorService.submit(callable));
