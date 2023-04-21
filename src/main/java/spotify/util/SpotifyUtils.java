@@ -371,7 +371,7 @@ public final class SpotifyUtils {
 	}
 
 	/**
-	 * Format the given time in milliseconds as mm:ss or hh:mm if larger than one hour
+	 * Format the given time in milliseconds as mm:ss or hh:mm:ss if larger than one hour
 	 *
 	 * @param timeInMs the time in milliseconds
 	 * @return the formatted time as string
@@ -380,10 +380,10 @@ public final class SpotifyUtils {
 		Duration duration = Duration.ofMillis(timeInMs);
 		long hours = duration.toHours();
 		int minutesPart = duration.toMinutesPart();
+		int secondsPart = duration.toSecondsPart();
 		if (hours > 0) {
-			return String.format("%d:%02d", hours, minutesPart);
+			return String.format("%d:%02d:%02d", hours, minutesPart, secondsPart);
 		} else {
-			int secondsPart = duration.toSecondsPart();
 			return String.format("%d:%02d", minutesPart, secondsPart);
 		}
 	}
