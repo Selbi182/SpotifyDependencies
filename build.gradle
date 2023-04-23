@@ -9,7 +9,7 @@ apply plugin: 'java-library'
 apply plugin: 'maven-publish'
 
 group = 'spotify'
-version = '1.9.4'
+version = '1.9.5'
 
 java {
     withJavadocJar()

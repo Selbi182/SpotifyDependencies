@@ -40,7 +40,6 @@ public class SpotifyApiManager {
 
   private static final long LOGIN_TIMEOUT = 10;
 
-  private final SpotifyApi spotifyApi;
   private final SpotifyApiConfig config;
   private final SpotifyDependenciesSettings spotifyDependenciesSettings;
   private final SpotifyLogger log;
@@ -48,19 +47,18 @@ public class SpotifyApiManager {
 
   private final URI redirectUri;
 
+  private SpotifyApi spotifyApi;
+
   /**
    * Authentication mutex to be used while the user is being prompted to log in
    */
   private final Semaphore lock = new Semaphore(0);
 
-  private SpotifyApiManager(
-      SpotifyApi spotifyApi,
-      SpotifyApiConfig config,
+  private SpotifyApiManager(SpotifyApiConfig config,
       SpotifyDependenciesSettings spotifyDependenciesSettings,
       SpotifyLogger spotifyLogger,
       SpringPortConfig springPortConfig,
       ApplicationEventPublisher applicationEventPublisher) throws UnknownHostException, URISyntaxException {
-    this.spotifyApi = spotifyApi;
     this.config = config;
     this.spotifyDependenciesSettings = spotifyDependenciesSettings;
     this.log = spotifyLogger;
@@ -74,11 +72,13 @@ public class SpotifyApiManager {
   /////////////////////
 
   /**
-   * A general purpose SpotifyAPI instance that never changes.
+   * A general purpose SpotifyAPI instance.
    */
   @Bean
   SpotifyApi spotifyApi() {
-    return createSpotifyApi(config.spotifyBotConfig().getAccessToken(), config.spotifyBotConfig().getRefreshToken());
+    SpotifyApi spotifyApi = createSpotifyApi(config.spotifyBotConfig().getAccessToken(), config.spotifyBotConfig().getRefreshToken());
+    this.spotifyApi = spotifyApi;
+    return spotifyApi;
   }
 
   private SpotifyApi createSpotifyApi(String accessToken, String refreshToken) {
