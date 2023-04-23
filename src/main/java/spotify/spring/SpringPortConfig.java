@@ -25,8 +25,8 @@ public class SpringPortConfig implements WebServerFactoryCustomizer<Configurable
   public int getPort() {
     if (port == null) {
       port = serverPortFromApplicationProperties != null
-          ? Integer.parseInt(serverPortFromApplicationProperties)
-          : spotifyDependenciesSettings.port();
+         ? Integer.parseInt(serverPortFromApplicationProperties)
+         : spotifyDependenciesSettings.port();
     }
     return port;
   }

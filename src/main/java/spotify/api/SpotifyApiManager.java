@@ -4,12 +4,16 @@ import java.awt.Desktop;
 import java.awt.HeadlessException;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.hc.core5.net.URIBuilder;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -18,17 +22,21 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import se.michaelthelin.spotify.SpotifyApi;
+import se.michaelthelin.spotify.SpotifyHttpManager;
 import se.michaelthelin.spotify.model_objects.credentials.AuthorizationCodeCredentials;
 import se.michaelthelin.spotify.requests.authorization.authorization_code.AuthorizationCodeUriRequest;
+import spotify.api.events.SpotifyApiException;
 import spotify.api.events.SpotifyApiLoggedInEvent;
 import spotify.config.SpotifyApiConfig;
+import spotify.spring.SpringPortConfig;
 import spotify.util.SpotifyLogger;
 import spotify.util.SpotifyUtils;
 
 @Component
 @RestController
-public class SpotifyApiAuthorization {
+public class SpotifyApiManager {
   protected static final String LOGIN_CALLBACK_URI = "/login-callback";
+  private static final String CUSTOM_REDIRECT_URI_FROM_ENV = "redirect_uri";
 
   private static final long LOGIN_TIMEOUT = 10;
 
@@ -38,18 +46,49 @@ public class SpotifyApiAuthorization {
   private final SpotifyLogger log;
   private final ApplicationEventPublisher applicationEventPublisher;
 
+  private final URI redirectUri;
+
   /**
    * Authentication mutex to be used while the user is being prompted to log in
    */
-  private static final Semaphore lock = new Semaphore(0);
+  private final Semaphore lock = new Semaphore(0);
 
-  private SpotifyApiAuthorization(SpotifyApi spotifyApi, SpotifyApiConfig config, SpotifyDependenciesSettings spotifyDependenciesSettings, SpotifyLogger spotifyLogger, ApplicationEventPublisher applicationEventPublisher) {
+  private SpotifyApiManager(
+      SpotifyApi spotifyApi,
+      SpotifyApiConfig config,
+      SpotifyDependenciesSettings spotifyDependenciesSettings,
+      SpotifyLogger spotifyLogger,
+      SpringPortConfig springPortConfig,
+      ApplicationEventPublisher applicationEventPublisher) throws UnknownHostException, URISyntaxException {
     this.spotifyApi = spotifyApi;
     this.config = config;
     this.spotifyDependenciesSettings = spotifyDependenciesSettings;
     this.log = spotifyLogger;
     this.applicationEventPublisher = applicationEventPublisher;
-    SpotifyCall.spotifyApiAuthorization = this;
+
+    this.redirectUri = generateRedirectUri(springPortConfig.getPort());
+
+    SpotifyCall.spotifyApiManager = this;
+  }
+
+  /////////////////////
+
+  /**
+   * A general purpose SpotifyAPI instance that never changes.
+   */
+  @Bean
+  SpotifyApi spotifyApi() {
+    return createSpotifyApi(config.spotifyBotConfig().getAccessToken(), config.spotifyBotConfig().getRefreshToken());
+  }
+
+  private SpotifyApi createSpotifyApi(String accessToken, String refreshToken) {
+    return new SpotifyApi.Builder()
+      .setClientId(config.spotifyBotConfig().getClientId())
+      .setClientSecret(config.spotifyBotConfig().getClientSecret())
+      .setRedirectUri(redirectUri)
+      .setAccessToken(accessToken)
+      .setRefreshToken(refreshToken)
+      .build();
   }
 
   /////////////////////
@@ -91,7 +130,7 @@ public class SpotifyApiAuthorization {
           throw new HeadlessException();
         }
         Desktop.getDesktop().browse(uri);
-      } catch (Throwable e) { // must be Throwable because some systems get an UnsatisfiedLinkError if AWT is missing (not just an exception)
+      } catch (Throwable e) { // must be Throwable because some systems get an UnsatisfiedLinkERROR if AWT is missing (not just an Exception)
         log.warning("Couldn't open browser window! Please copy-paste the authorization URL manually into your browser and follow the login steps");
       }
       if (!lock.tryAcquire(LOGIN_TIMEOUT, TimeUnit.MINUTES)) {
@@ -167,4 +206,21 @@ public class SpotifyApiAuthorization {
       e.printStackTrace();
     }
   }
+
+  /////////////////////
+
+  private URI generateRedirectUri(int port) throws UnknownHostException, URISyntaxException {
+    String redirectUriFromEnv = System.getenv("");
+    if (redirectUriFromEnv != null) {
+      if (!redirectUriFromEnv.endsWith(SpotifyApiManager.LOGIN_CALLBACK_URI)) {
+        throw new IllegalStateException("'" + CUSTOM_REDIRECT_URI_FROM_ENV + "' must end with " + SpotifyApiManager.LOGIN_CALLBACK_URI);
+      }
+      return SpotifyHttpManager.makeUri(redirectUriFromEnv);
+    }
+    return URIBuilder.localhost()
+      .setPort(port)
+      .setPath(SpotifyApiManager.LOGIN_CALLBACK_URI)
+      .build();
+  }
+
 }

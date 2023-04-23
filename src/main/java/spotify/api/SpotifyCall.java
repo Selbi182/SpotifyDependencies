@@ -16,14 +16,15 @@ import se.michaelthelin.spotify.model_objects.specification.PagingCursorbased;
 import se.michaelthelin.spotify.requests.IRequest;
 import se.michaelthelin.spotify.requests.data.IPagingCursorbasedRequestBuilder;
 import se.michaelthelin.spotify.requests.data.IPagingRequestBuilder;
+import spotify.api.events.SpotifyApiException;
 import spotify.util.SpotifyUtils;
 
 public class SpotifyCall {
 
-	static SpotifyApiAuthorization spotifyApiAuthorization;
+	protected static SpotifyApiManager spotifyApiManager;
 
 	private final static long RETRY_TIMEOUT_429 = 1000;
-	private final static long RETRY_TIMEOUT_GENERIC_ERROR = 60 * 1000;
+	private final static long RETRY_TIMEOUT_GENERIC_ERROR = 10 * 1000;
 	private final static int MAX_ATTEMPTS = 10;
 
 	/**
@@ -60,7 +61,7 @@ public class SpotifyCall {
 				} catch (ParseException | IOException e) {
 					throw new SpotifyApiException(e);
 				} catch (UnauthorizedException e) {
-					String newAccessToken = spotifyApiAuthorization.refresh();
+					String newAccessToken = spotifyApiManager.refresh();
 					requestBuilder.setHeader("Authorization", "Bearer " + newAccessToken);
 				} catch (TooManyRequestsException e) {
 					int timeout = e.getRetryAfter();

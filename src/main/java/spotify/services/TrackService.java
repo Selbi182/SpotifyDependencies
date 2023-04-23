@@ -7,12 +7,11 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import se.michaelthelin.spotify.SpotifyApi;
-import se.michaelthelin.spotify.exceptions.detailed.NotFoundException;
 import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
 import se.michaelthelin.spotify.model_objects.specification.AudioFeatures;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 import se.michaelthelin.spotify.model_objects.specification.TrackSimplified;
-import spotify.api.SpotifyApiException;
+import spotify.api.events.SpotifyApiException;
 import spotify.api.SpotifyCall;
 import spotify.util.SpotifyLogger;
 import spotify.util.data.AlbumTrackPair;

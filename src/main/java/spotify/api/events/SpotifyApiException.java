@@ -1,4 +1,4 @@
-package spotify.api;
+package spotify.api.events;
 
 /**
  * A general wrapper for every type of Exception related to outside requests to

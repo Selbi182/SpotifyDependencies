@@ -19,8 +19,8 @@ public class SpotifyOptimizedExecutorService {
 
   /**
    * The amount of threads used to fetch multiple entities from Spotify at once.
-   * The specific amount of threads was decided by trial-and-error,
-   * as anything greater than 5 concurrent threads will give diminishing returns.
+   * The specific amount of threads was decided by trial-and-error, concluding
+   * that anything greater than 5 concurrent threads will give diminishing returns.
    * <pre>Test results (with roughly 300 followed artists):
    *  1: 38075ms
    *  2: 12950ms
