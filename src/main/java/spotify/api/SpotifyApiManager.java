@@ -115,11 +115,13 @@ public class SpotifyApiManager {
    */
   private void authenticate() {
     try {
-      AuthorizationCodeUriRequest.Builder authorizationCodeUriBuilder = spotifyApi.authorizationCodeUri();
+      AuthorizationCodeUriRequest.Builder authorizationCodeUriBuilder = spotifyApi.authorizationCodeUri().redirect_uri(redirectUri);
+
       String scopes = SpotifyUtils.buildScopes(spotifyDependenciesSettings.requiredScopes());
       if (!scopes.isBlank()) {
         authorizationCodeUriBuilder.scope(scopes);
       }
+
       URI uri = SpotifyCall.execute(authorizationCodeUriBuilder);
 
       log.info("Spotify authorization URL: ");
@@ -210,14 +212,16 @@ public class SpotifyApiManager {
   /////////////////////
 
   private URI generateRedirectUri(int port) throws UnknownHostException, URISyntaxException {
-    String redirectUriFromEnv = System.getenv("");
+    String redirectUriFromEnv = System.getenv(CUSTOM_REDIRECT_URI_FROM_ENV);
     if (redirectUriFromEnv != null) {
       if (!redirectUriFromEnv.endsWith(SpotifyApiManager.LOGIN_CALLBACK_URI)) {
         throw new IllegalStateException("'" + CUSTOM_REDIRECT_URI_FROM_ENV + "' must end with " + SpotifyApiManager.LOGIN_CALLBACK_URI);
       }
       return SpotifyHttpManager.makeUri(redirectUriFromEnv);
     }
-    return URIBuilder.localhost()
+    return new URIBuilder()
+      .setScheme("http")
+      .setHost("localhost")
       .setPort(port)
       .setPath(SpotifyApiManager.LOGIN_CALLBACK_URI)
       .build();
