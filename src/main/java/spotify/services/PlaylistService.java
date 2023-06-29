@@ -47,6 +47,16 @@ public class PlaylistService {
    * Get all tracks of the given playlist
    *
    * @param playlistId the playlist ID
+   * @return the playlist tracks
+   */
+  public List<PlaylistTrack> getPlaylistTracks(String playlistId) {
+    return getPlaylistTracks(playlistId, 0);
+  }
+
+  /**
+   * Get all tracks of the given playlist, starting from the given offset.
+   *
+   * @param playlistId the playlist ID
    * @param offset the offset to start looking at within the playlist
    * @return the playlist tracks
    */
@@ -55,6 +65,36 @@ public class PlaylistService {
       .getPlaylistsItems(playlistId)
       .offset(offset)
       .limit(PLAYLIST_INTERACTION_LIMIT));
+  }
+
+  /**
+   * Get all tracks from the given playlist and convert them straight into Track objects.
+   * The provided playlist must ONLY contain songs as a result, no podcasts.
+   *
+   * @param playlistId the playlist ID
+   * @return the tracks
+   * @throws ClassCastException if the given playlist contains anything but regular songs
+   *                            (such as podcasts)
+   */
+  public List<Track> getAllPlaylistSongs(String playlistId) throws ClassCastException {
+    return getPlaylistTracks(playlistId)
+      .stream()
+      .map(PlaylistTrack::getTrack)
+      .map(Track.class::cast)
+      .collect(Collectors.toList());
+  }
+
+  /**
+   * Get all tracks from the given playlist and convert them straight into Track objects.
+   * The provided playlist must ONLY contain songs as a result, no podcasts.
+   *
+   * @param playlist the playlist
+   * @return the tracks
+   * @throws ClassCastException if the given playlist contains anything but regular songs
+   *                            (such as podcasts)
+   */
+  public List<Track> getAllPlaylistSongs(Playlist playlist) throws ClassCastException {
+    return getAllPlaylistSongs(playlist.getId());
   }
 
   /**
@@ -190,22 +230,6 @@ public class PlaylistService {
    */
   public Playlist upgradePlaylistSimplified(PlaylistSimplified playlistSimplified) {
     return SpotifyCall.execute(spotifyApi.getPlaylist(playlistSimplified.getId()));
-  }
-
-  /**
-   * Get all songs from the given playlist. The provided playlist must ONLY contain songs.
-   *
-   * @param playlist the playlist
-   * @return the tracks
-   * @throws ClassCastException if the given playlist contains anything but regular songs
-   *                            (such as podcasts)
-   */
-  public List<Track> getAllPlaylistSongs(Playlist playlist) throws ClassCastException {
-    return SpotifyCall.executePaging(spotifyApi.getPlaylistsItems(playlist.getId()))
-      .stream()
-      .map(PlaylistTrack::getTrack)
-      .map(Track.class::cast)
-      .collect(Collectors.toList());
   }
 
   /**
