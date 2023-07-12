@@ -6,7 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.logging.log4j.util.Strings;
+import org.mozilla.universalchardet.UniversalDetector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -212,7 +213,8 @@ public class SpotifyLogger {
             limit = Integer.MAX_VALUE;
           }
           try {
-            List<String> logFileLines = Files.readAllLines(logFile.toPath(), StandardCharsets.UTF_8);
+            String encoding = UniversalDetector.detectCharset(logFile);
+            List<String> logFileLines = Files.readAllLines(logFile.toPath(), Charset.forName(encoding));
             return logFileLines.subList(Math.max(0, logFileLines.size() - limit), logFileLines.size());
           } catch (IOException e) {
             throw new IOException("Failed to read log file (malformed encoding?): " + e);
