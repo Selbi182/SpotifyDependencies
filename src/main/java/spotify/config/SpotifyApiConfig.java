@@ -29,7 +29,7 @@ public class SpotifyApiConfig {
 
   /**
    * Update the access and refresh tokens, both in the config object and
-   * the settings
+   * the settings.
    *
    * @param accessToken  the new access token
    * @param refreshToken the new refresh token
@@ -41,6 +41,22 @@ public class SpotifyApiConfig {
 
     spotifyApiProperties().setProperty(ACCESS_TOKEN, accessToken);
     spotifyApiProperties().setProperty(REFRESH_TOKEN, refreshToken);
+    savePropertiesFile();
+  }
+
+  /**
+   * Removes both the access and refresh token from the spotifybot.properties file,
+   * requiring a new login on the next startup.
+   *
+   * @throws IOException on read/write failure
+   */
+  public void logout() throws IOException {
+    spotifyApiProperties().remove(ACCESS_TOKEN);
+    spotifyApiProperties().remove(REFRESH_TOKEN);
+    savePropertiesFile();
+  }
+
+  private void savePropertiesFile() throws IOException {
     spotifyApiProperties().store(new FileOutputStream(propertiesFile), null);
   }
 
