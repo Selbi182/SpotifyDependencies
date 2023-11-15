@@ -1,7 +1,7 @@
 buildscript {
     ext {
         // Spring has to stay at 2.x.x for now, as 3.x.x requires Java 17
-        springVersion = '2.7.7'
+        springVersion = '2.7.17'
     }
 }
 
@@ -9,7 +9,7 @@ apply plugin: 'java-library'
 apply plugin: 'maven-publish'
 
 group = 'spotify'
-version = '1.10.1'
+version = '1.11.0'
 
 java {
     withJavadocJar()
@@ -28,6 +28,10 @@ publishing {
         maven {
             name 'spotify-dependencies'
             url 'https://mymavenrepo.com/repo/dKBgnxLBDZsY8Dh8aCq9/'
+            credentials {
+                username project.publishingUsername
+                password project.publishingPassword
+            }
         }
     }
     publications {
@@ -66,7 +70,7 @@ publishing {
 
 dependencies {
     implementation "org.springframework.boot:spring-boot-starter-web:$springVersion"
-    implementation 'se.michaelthelin.spotify:spotify-web-api-java:8.0.0'
-    implementation 'org.jsoup:jsoup:1.15.4'
+    implementation 'se.michaelthelin.spotify:spotify-web-api-java:8.3.4'
+    implementation 'org.jsoup:jsoup:1.16.2'
     implementation 'com.github.albfernandez:juniversalchardet:2.4.0'
 }
