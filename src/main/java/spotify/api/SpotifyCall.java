@@ -67,7 +67,7 @@ public class SpotifyCall {
 					int timeout = e.getRetryAfter();
 					long sleepMs = (timeout * RETRY_TIMEOUT_429 * attempt) + RETRY_TIMEOUT_429;
 					SpotifyUtils.sneakySleep(sleepMs);
-				} catch (NotFoundException | BadRequestException | ForbiddenException e) {
+				} catch (NotFoundException | BadRequestException | ForbiddenException | UnsupportedOperationException e) {
 					break;
 				} catch (Exception e) {
 					SpotifyUtils.sneakySleep(RETRY_TIMEOUT_GENERIC_ERROR);
