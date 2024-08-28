@@ -26,6 +26,7 @@ public class SpotifyCall {
 
 	private final static long RETRY_TIMEOUT_429 = 1000;
 	private final static long RETRY_TIMEOUT_GENERIC_ERROR = 10 * 1000;
+	private final static long MAX_RETRY_WAIT = 1000;
 	private final static int MAX_ATTEMPTS = 10;
 
 	/**
@@ -66,6 +67,9 @@ public class SpotifyCall {
 					requestBuilder.setHeader("Authorization", "Bearer " + newAccessToken);
 				} catch (TooManyRequestsException e) {
 					int timeout = e.getRetryAfter();
+					if (timeout > MAX_RETRY_WAIT) {
+						break;
+					}
 					long sleepMs = (timeout * RETRY_TIMEOUT_429 * attempt) + RETRY_TIMEOUT_429;
 					SpotifyUtils.sneakySleep(sleepMs);
 				} catch (NotFoundException | BadRequestException | BadGatewayException | ForbiddenException | UnsupportedOperationException e) {
