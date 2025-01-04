@@ -72,6 +72,22 @@ public class SpotifyApiManager {
   /////////////////////
 
   /**
+   * Callback receiver for logins
+   *
+   * @param code the authorization code from the Spotify API
+   * @return a response entity indicating that the login was successful
+   */
+  @RequestMapping(LOGIN_CALLBACK_URI)
+  public ResponseEntity<String> loginCallback(@RequestParam String code) {
+    AuthorizationCodeCredentials acc = SpotifyCall.execute(spotifyApi.authorizationCode(code));
+    updateTokens(acc);
+    lock.release();
+    return ResponseEntity.ok("Successfully logged in!");
+  }
+
+  /////////////////////
+
+  /**
    * A general purpose SpotifyAPI instance.
    */
   @Bean
@@ -95,8 +111,10 @@ public class SpotifyApiManager {
 
   @EventListener(ApplicationReadyEvent.class)
   public void initialLogin() {
-    refresh();
-    applicationEventPublisher.publishEvent(new SpotifyApiLoggedInEvent(this));
+    new Thread(() -> {
+      refresh();
+      applicationEventPublisher.publishEvent(new SpotifyApiLoggedInEvent(this));
+    });
   }
 
   public String refresh() {
@@ -138,24 +156,10 @@ public class SpotifyApiManager {
       if (!lock.tryAcquire(LOGIN_TIMEOUT, TimeUnit.MINUTES)) {
         throw new InterruptedException();
       }
-    } catch (InterruptedException | SpotifyApiException e) {
+    } catch (SpotifyApiException | InterruptedException e) {
       log.error("Login timeout! Shutting down application in case of a Spotify Web API anomaly!");
       System.exit(182);
     }
-  }
-
-  /**
-   * Callback receiver for logins
-   *
-   * @param code the authorization code from the Spotify API
-   * @return a response entity indicating that the login was successful
-   */
-  @RequestMapping(LOGIN_CALLBACK_URI)
-  private ResponseEntity<String> loginCallback(@RequestParam String code) {
-    AuthorizationCodeCredentials acc = SpotifyCall.execute(spotifyApi.authorizationCode(code));
-    updateTokens(acc);
-    lock.release();
-    return ResponseEntity.ok("Successfully logged in!");
   }
 
   ///////////////////////

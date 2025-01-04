@@ -9,7 +9,7 @@ apply plugin: 'java-library'
 apply plugin: 'maven-publish'
 
 group = 'spotify'
-version = '1.11.3'
+version = '1.11.4ec'
 
 java {
     withJavadocJar()
@@ -70,8 +70,7 @@ publishing {
 
 dependencies {
     implementation "org.springframework.boot:spring-boot-starter-web:$springVersion"
-    implementation 'se.michaelthelin.spotify:spotify-web-api-java:8.4.1'
-    implementation 'org.apache.httpcomponents.client5:httpclient5:5.2.1' // fixes a version conflict with spotify-web-api-java v8.3.+
+    implementation 'se.michaelthelin.spotify:spotify-web-api-java:9.1.0'
     implementation 'org.jsoup:jsoup:1.16.2'
     implementation 'com.github.albfernandez:juniversalchardet:2.4.0'
 }
