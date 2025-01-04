@@ -5,7 +5,6 @@ import java.awt.HeadlessException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.UnknownHostException;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -58,7 +57,7 @@ public class SpotifyApiManager {
       SpotifyDependenciesSettings spotifyDependenciesSettings,
       SpotifyLogger spotifyLogger,
       SpringPortConfig springPortConfig,
-      ApplicationEventPublisher applicationEventPublisher) throws UnknownHostException, URISyntaxException {
+      ApplicationEventPublisher applicationEventPublisher) throws URISyntaxException {
     this.config = config;
     this.spotifyDependenciesSettings = spotifyDependenciesSettings;
     this.log = spotifyLogger;
@@ -111,10 +110,8 @@ public class SpotifyApiManager {
 
   @EventListener(ApplicationReadyEvent.class)
   public void initialLogin() {
-    new Thread(() -> {
-      refresh();
-      applicationEventPublisher.publishEvent(new SpotifyApiLoggedInEvent(this));
-    });
+    refresh();
+    applicationEventPublisher.publishEvent(new SpotifyApiLoggedInEvent(this));
   }
 
   public String refresh() {
@@ -215,7 +212,7 @@ public class SpotifyApiManager {
 
   /////////////////////
 
-  private URI generateRedirectUri(int port) throws UnknownHostException, URISyntaxException {
+  private URI generateRedirectUri(int port) throws URISyntaxException {
     String redirectUriFromEnv = System.getenv(CUSTOM_REDIRECT_URI_FROM_ENV);
     if (redirectUriFromEnv != null) {
       if (!redirectUriFromEnv.endsWith(SpotifyApiManager.LOGIN_CALLBACK_URI)) {
