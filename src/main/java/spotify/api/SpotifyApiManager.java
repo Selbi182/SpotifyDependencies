@@ -34,7 +34,8 @@ import spotify.util.SpotifyUtils;
 @Component
 @RestController
 public class SpotifyApiManager {
-  protected static final String LOGIN_CALLBACK_URI = "/login-callback";
+  protected static final String LOGIN_CALLBACK_URI = "/callback";
+  
   private static final String CUSTOM_REDIRECT_URI_FROM_ENV = "redirect_uri";
 
   private static final long LOGIN_TIMEOUT = 10;
@@ -222,7 +223,7 @@ public class SpotifyApiManager {
     }
     return new URIBuilder()
       .setScheme("http")
-      .setHost("localhost")
+      .setHost("127.0.0.1")
       .setPort(port)
       .setPath(SpotifyApiManager.LOGIN_CALLBACK_URI)
       .build();
