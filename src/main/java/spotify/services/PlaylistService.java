@@ -18,6 +18,7 @@ import se.michaelthelin.spotify.requests.data.playlists.AddItemsToPlaylistReques
 import se.michaelthelin.spotify.requests.data.playlists.ChangePlaylistsDetailsRequest;
 import se.michaelthelin.spotify.requests.data.playlists.CreatePlaylistRequest;
 import spotify.api.SpotifyCall;
+import spotify.api.events.SpotifyApiException;
 import spotify.util.SpotifyUtils;
 
 @Service
@@ -155,8 +156,11 @@ public class PlaylistService {
    * @param playlist the playlist to add the songs to
    * @param trackIds the track IDs to add
    * @param position the position to add the songs at
+   * @throws SpotifyApiException when Spotify is stupid again
+   *                             (specifically by erroneously giving "Insufficient client scope" ForbiddenExceptions
+   *                             for seemingly no root cause, let alone a reason)
    */
-  public void addSongsToPlaylistById(Playlist playlist, List<String> trackIds, Integer position) {
+  public void addSongsToPlaylistById(Playlist playlist, List<String> trackIds, Integer position) throws SpotifyApiException {
     if (!trackIds.isEmpty()) {
       JsonArray json = new JsonArray();
       for (String id : trackIds) {
@@ -181,6 +185,33 @@ public class PlaylistService {
       .map(PlaylistTrack::getTrack)
       .collect(Collectors.toList());
     removeItemsFromPlaylist(playlistId, playlistTracks);
+  }
+
+  /**
+   * Delete a playlist ("unfollow").
+   *
+   * @param playlist the Playlist object to delete
+   */
+  public void deletePlaylist(Playlist playlist) {
+    deletePlaylist(playlist.getId());
+  }
+
+  /**
+   * Delete a playlist ("unfollow").
+   *
+   * @param playlist the PlaylistSimplified object to delete
+   */
+  public void deletePlaylist(PlaylistSimplified playlist) {
+    deletePlaylist(playlist.getId());
+  }
+
+  /**
+   * Delete a playlist ("unfollow").
+   *
+   * @param playlistId the playlist ID to delete
+   */
+  public void deletePlaylist(String playlistId) {
+    SpotifyCall.execute(spotifyApi.unfollowPlaylist(playlistId));
   }
 
   /**
