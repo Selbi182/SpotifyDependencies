@@ -1,5 +1,7 @@
 package spotify.services;
 
+import java.util.Locale;
+
 import org.springframework.stereotype.Service;
 
 import com.neovisionaries.i18n.CountryCode;
@@ -42,11 +44,17 @@ public class UserService {
   }
 
   /**
-   * Get the country code (market) of the current cached user
+   * Get the country code (market) that is available in Locale.getDefault (the local machine).
+   * Spotify unfortunately deleted the old field for the current user's country, possibly
+   * due to privacy concerns.
    *
    * @return the country code
    */
   public CountryCode getMarketOfCurrentUser() {
-    return getCurrentUser().getCountry();
+    try {
+      return CountryCode.valueOf(Locale.getDefault().getCountry());
+    }  catch (Exception e) {
+      return CountryCode.DE;
+    }
   }
 }

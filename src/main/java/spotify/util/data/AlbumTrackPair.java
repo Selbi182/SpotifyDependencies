@@ -3,7 +3,7 @@ package spotify.util.data;
 import java.util.Comparator;
 import java.util.List;
 
-import org.springframework.lang.NonNull;
+import org.jspecify.annotations.NonNull;
 
 import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
 import se.michaelthelin.spotify.model_objects.specification.TrackSimplified;
@@ -39,7 +39,7 @@ public class AlbumTrackPair implements Comparable<AlbumTrackPair>, Comparator<Al
 
   /////////////
 
-  private final static Comparator<AlbumTrackPair> COMPARATOR_ALBUM_GROUP = Comparator.comparing(atp -> atp.getAlbum().getAlbumGroup());
+  private final static Comparator<AlbumTrackPair> COMPARATOR_ALBUM_GROUP = Comparator.comparing(atp -> atp.getAlbum().getAlbumType());
   private final static Comparator<AlbumTrackPair> COMPARATOR_RELEASE_DATE = Comparator.comparing(atp -> atp.getAlbum().getReleaseDate());
   private final static Comparator<AlbumTrackPair> COMPARATOR_TRACK_COUNT = Comparator.comparing(atp -> atp.getTracks().size(), Comparator.reverseOrder());
   private final static Comparator<AlbumTrackPair> COMPARATOR_FIRST_ARTIST_NAME = Comparator.comparing(atp -> SpotifyUtils.getFirstArtistName(atp.getAlbum()), Comparator.reverseOrder());
@@ -67,7 +67,7 @@ public class AlbumTrackPair implements Comparable<AlbumTrackPair>, Comparator<Al
       return super.toString();
     }
     return String.format("[%s] %s - %s (%s) <%d>",
-      album.getAlbumGroup().toString(),
+      album.getAlbumType().toString(),
       album.getArtists()[0].getName(),
       album.getName(),
       album.getReleaseDate(),

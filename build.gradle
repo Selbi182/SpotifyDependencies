@@ -1,7 +1,6 @@
 buildscript {
     ext {
-        // Spring has to stay at 2.x.x for now, as 3.x.x requires Java 17
-        springVersion = '2.7.18'
+        springVersion = '4.1.0-M2'
     }
 }
 
@@ -9,7 +8,7 @@ apply plugin: 'java-library'
 apply plugin: 'maven-publish'
 
 group = 'spotify'
-version = '1.12.2'
+version = '1.13.0-pre4'
 
 java {
     withJavadocJar()
@@ -18,11 +17,10 @@ java {
 
 repositories {
     mavenCentral()
-    maven {
-        url 'https://jitpack.io'
+    repositories {
+        maven { url 'https://jitpack.io' }
     }
 }
-
 publishing {
     repositories {
         maven {
@@ -68,9 +66,11 @@ publishing {
     }
 }
 
+
 dependencies {
     implementation "org.springframework.boot:spring-boot-starter-web:$springVersion"
-    implementation 'se.michaelthelin.spotify:spotify-web-api-java:9.2.0'
+    //implementation 'se.michaelthelin.spotify:spotify-web-api-java:10.0.0-RC2'
+    implementation 'se.michaelthelin.spotify:spotify-web-api-java:10.0.0-RC2'
     implementation 'org.jsoup:jsoup:1.16.2'
     implementation 'com.github.albfernandez:juniversalchardet:2.4.0'
 }

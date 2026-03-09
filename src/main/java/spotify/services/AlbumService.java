@@ -17,7 +17,7 @@ import spotify.api.SpotifyCall;
 
 @Service
 public class AlbumService {
-  private final static int MAX_ALBUM_FETCH_LIMIT = 50;
+  private final static int MAX_ALBUM_FETCH_LIMIT = 10;
 
   private final SpotifyApi spotifyApi;
 
@@ -77,6 +77,6 @@ public class AlbumService {
       .getArtistsAlbums(artistId)
       .market(market)
       .limit(MAX_ALBUM_FETCH_LIMIT)
-      .album_type(albumGroups));
+      .include_groups(albumGroups));
   }
 }

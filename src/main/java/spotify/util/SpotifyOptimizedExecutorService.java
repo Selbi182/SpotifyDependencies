@@ -42,7 +42,7 @@ public class SpotifyOptimizedExecutorService {
 
   /**
    * Accepts a list of callables producing, all producing items for the same result,
-   * in a multi-threaded manner optimized for Spotify's API (more specifically: the maximum
+   * in a multithreaded manner optimized for Spotify's API (more specifically: the maximum
    * throughput with the minimal amount of 429 errors).
    *
    * This method blocks until all results have been acquired.
@@ -70,7 +70,7 @@ public class SpotifyOptimizedExecutorService {
 
   /**
    * Accepts a list of callables, all producing items for the same listed result,
-   * in a multi-threaded manner optimized for Spotify's API (more specifically: the maximum
+   * in a multithreaded manner optimized for Spotify's API (more specifically: the maximum
    * throughput with the minimal amount of 429 errors).
    *
    * This method blocks until all results have been acquired.

@@ -27,11 +27,9 @@ public class PlaylistService {
   private final static int PLAYLIST_INTERACTION_LIMIT = 100;
 
   private final SpotifyApi spotifyApi;
-  private final UserService userService;
 
-  PlaylistService(SpotifyApi spotifyApi, UserService userService) {
+  PlaylistService(SpotifyApi spotifyApi) {
     this.spotifyApi = spotifyApi;
-    this.userService = userService;
   }
 
   /**
@@ -80,7 +78,7 @@ public class PlaylistService {
   public List<Track> getAllPlaylistSongs(String playlistId) throws ClassCastException {
     return getPlaylistTracks(playlistId)
       .stream()
-      .map(PlaylistTrack::getTrack)
+      .map(PlaylistTrack::getItem)
       .map(Track.class::cast)
       .collect(Collectors.toList());
   }
@@ -182,7 +180,7 @@ public class PlaylistService {
   public void clearPlaylist(Playlist playlist) {
     String playlistId = playlist.getId();
     List<IPlaylistItem> playlistTracks = SpotifyCall.executePaging(spotifyApi.getPlaylistsItems(playlistId)).stream()
-      .map(PlaylistTrack::getTrack)
+      .map(PlaylistTrack::getItem)
       .collect(Collectors.toList());
     removeItemsFromPlaylist(playlistId, playlistTracks);
   }
@@ -245,11 +243,10 @@ public class PlaylistService {
    * @return the new playlist
    */
   public Playlist createPlaylist(String title, String description, boolean public_) {
-    CreatePlaylistRequest.Builder builder = spotifyApi.createPlaylist(userService.getCurrentUser().getId(), title).public_(public_);
+    CreatePlaylistRequest.Builder builder = spotifyApi.createPlaylist(title).public_(public_);
     if (description != null) {
       builder = builder.description(description);
     }
-
     return SpotifyCall.execute(builder);
   }
 

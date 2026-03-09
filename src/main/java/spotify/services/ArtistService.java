@@ -10,14 +10,13 @@ import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.enums.ModelObjectType;
 import se.michaelthelin.spotify.model_objects.specification.Artist;
 import se.michaelthelin.spotify.model_objects.specification.Paging;
-import spotify.api.events.SpotifyApiException;
 import spotify.api.SpotifyCall;
-import spotify.util.SpotifyUtils;
+import spotify.api.events.SpotifyApiException;
 
 @Service
 public class ArtistService {
 
-  private final static int MAX_ARTIST_FETCH_LIMIT = 50;
+  private final static int MAX_ARTIST_FETCH_LIMIT = 10;
 
   private final SpotifyApi spotifyApi;
 
@@ -34,11 +33,9 @@ public class ArtistService {
   public List<Artist> getArtists(List<String> artistIds) {
     List<Artist> allArtists = new ArrayList<>();
 
-    List<List<String>> artistIdsPartitioned = SpotifyUtils.partitionList(artistIds, MAX_ARTIST_FETCH_LIMIT);
-    for (List<String> artistIdPartition : artistIdsPartitioned) {
-      String[] artistIdsArray = artistIdPartition.toArray(String[]::new);
-      Artist[] artists = SpotifyCall.execute(spotifyApi.getSeveralArtists(artistIdsArray));
-      allArtists.addAll(Arrays.asList(artists));
+    for (String artistId : artistIds) {
+      Artist artist = SpotifyCall.execute(spotifyApi.getArtist(artistId));
+      allArtists.add(artist);
     }
 
     return allArtists;

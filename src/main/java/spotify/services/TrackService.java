@@ -19,7 +19,7 @@ import spotify.util.data.AlbumTrackPair;
 @Service
 public class TrackService {
 
-	private final static int MAX_PLAYLIST_TRACK_FETCH_LIMIT = 50;
+	private final static int MAX_PLAYLIST_TRACK_FETCH_LIMIT = 10;
 
 	private final SpotifyApi spotifyApi;
 	private final SpotifyLogger log;

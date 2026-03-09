@@ -29,6 +29,7 @@ import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 
 import se.michaelthelin.spotify.enums.AlbumGroup;
+import se.michaelthelin.spotify.enums.AlbumType;
 import se.michaelthelin.spotify.enums.ModelObjectType;
 import se.michaelthelin.spotify.model_objects.IPlaylistItem;
 import se.michaelthelin.spotify.model_objects.specification.Album;
@@ -108,7 +109,7 @@ public final class SpotifyUtils {
    */
   public static boolean isWithinTimeoutWindow(LocalDateTime baseDate, int timeoutInHours) {
     LocalDateTime currentTime = LocalDateTime.now();
-    return currentTime.minus(timeoutInHours, ChronoUnit.HOURS).isBefore(baseDate);
+    return currentTime.minusHours(timeoutInHours).isBefore(baseDate);
   }
 
   /**
@@ -179,7 +180,7 @@ public final class SpotifyUtils {
    */
   public static String formatAlbum(AlbumSimplified as) {
     return String.format("[%s] %s - %s (%s)",
-      as.getAlbumGroup().toString(),
+      as.getAlbumType().toString(),
       joinArtists(as.getArtists()),
       as.getName(),
       as.getReleaseDate());
@@ -452,7 +453,7 @@ public final class SpotifyUtils {
   public static String albumIdentifierString(AlbumSimplified as) {
     String artistPart = SpotifyUtils.strippedTitleIdentifier(SpotifyUtils.getFirstArtistName(as));
     String releasePart = SpotifyUtils.strippedTitleIdentifier(as.getName());
-    return String.join("_", as.getAlbumGroup().getGroup(), artistPart, releasePart).toLowerCase();
+    return String.join("_", as.getAlbumType().getType(), artistPart, releasePart).toLowerCase();
   }
 
   /**
@@ -486,10 +487,9 @@ public final class SpotifyUtils {
   public static AlbumSimplified asAlbumSimplified(Album album) {
     AlbumSimplified.Builder as = new AlbumSimplified.Builder();
 
-    as.setAlbumGroup(AlbumGroup.keyOf(album.getAlbumType().getType())); // Not exact but works
+    as.setAlbumType(AlbumType.keyOf(album.getAlbumType().getType())); // Not exact but works
     as.setAlbumType(album.getAlbumType());
     as.setArtists(album.getArtists());
-    as.setAvailableMarkets(album.getAvailableMarkets());
     as.setExternalUrls(album.getExternalUrls());
     as.setHref(album.getHref());
     as.setId(album.getId());
@@ -515,7 +515,6 @@ public final class SpotifyUtils {
     Track.Builder trackBuilder = new Track.Builder();
 
     trackBuilder.setArtists(ts.getArtists());
-    trackBuilder.setAvailableMarkets(ts.getAvailableMarkets());
     trackBuilder.setDiscNumber(ts.getDiscNumber());
     trackBuilder.setDurationMs(ts.getDurationMs());
     trackBuilder.setExplicit(ts.getIsExplicit());
@@ -523,7 +522,6 @@ public final class SpotifyUtils {
     trackBuilder.setHref(ts.getHref());
     trackBuilder.setId(ts.getId());
     trackBuilder.setIsPlayable(ts.getIsPlayable());
-    trackBuilder.setLinkedFrom(ts.getLinkedFrom());
     trackBuilder.setName(ts.getName());
     trackBuilder.setPreviewUrl(ts.getPreviewUrl());
     trackBuilder.setTrackNumber(ts.getTrackNumber());
