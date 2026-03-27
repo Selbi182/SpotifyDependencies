@@ -78,7 +78,7 @@ public class SpotifyApiManager {
    * @return a response entity indicating that the login was successful
    */
   @RequestMapping(LOGIN_CALLBACK_URI)
-  public ResponseEntity<String> loginCallback(@RequestParam String code) {
+  public ResponseEntity<String> loginCallback(@RequestParam("code") String code) {
     AuthorizationCodeCredentials acc = SpotifyCall.execute(spotifyApi.authorizationCode(code));
     updateTokens(acc);
     lock.release();

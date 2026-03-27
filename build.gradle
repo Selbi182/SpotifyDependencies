@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        springVersion = '4.1.0-M2'
+        springVersion = '4.1.0-M3'
     }
 }
 
@@ -8,7 +8,7 @@ apply plugin: 'java-library'
 apply plugin: 'maven-publish'
 
 group = 'spotify'
-version = '1.13.0-pre4'
+version = '1.13.0-pre6'
 
 java {
     withJavadocJar()
@@ -21,6 +21,7 @@ repositories {
         maven { url 'https://jitpack.io' }
     }
 }
+
 publishing {
     repositories {
         maven {
@@ -66,10 +67,8 @@ publishing {
     }
 }
 
-
 dependencies {
     implementation "org.springframework.boot:spring-boot-starter-web:$springVersion"
-    //implementation 'se.michaelthelin.spotify:spotify-web-api-java:10.0.0-RC2'
     implementation 'se.michaelthelin.spotify:spotify-web-api-java:10.0.0-RC2'
     implementation 'org.jsoup:jsoup:1.16.2'
     implementation 'com.github.albfernandez:juniversalchardet:2.4.0'
