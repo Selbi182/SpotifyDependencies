@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
  * A service class that executes Spotify API requests in a multithreaded fashion
  * to increase performance.
  */
+@SuppressWarnings("unused")
 @Service
 public class SpotifyOptimizedExecutorService {
 
@@ -43,7 +44,7 @@ public class SpotifyOptimizedExecutorService {
   /**
    * Accepts a list of callables producing, all producing items for the same result,
    * in a multithreaded manner optimized for Spotify's API (more specifically: the maximum
-   * throughput with the minimal amount of 429 errors).
+   * throughput with the minimal amount of 429 errors).<br><br>
    *
    * This method blocks until all results have been acquired.
    *
@@ -62,7 +63,7 @@ public class SpotifyOptimizedExecutorService {
         T result = future.get();
         allResults.add(result);
       } catch (InterruptedException | ExecutionException e) {
-        e.printStackTrace();
+        SpotifyUtils.genericException(e);
       }
     }
     return allResults;
@@ -71,7 +72,7 @@ public class SpotifyOptimizedExecutorService {
   /**
    * Accepts a list of callables, all producing items for the same listed result,
    * in a multithreaded manner optimized for Spotify's API (more specifically: the maximum
-   * throughput with the minimal amount of 429 errors).
+   * throughput with the minimal amount of 429 errors).<br><br>
    *
    * This method blocks until all results have been acquired.
    *
@@ -90,7 +91,7 @@ public class SpotifyOptimizedExecutorService {
         List<T> result = future.get();
         allResults.addAll(result);
       } catch (InterruptedException | ExecutionException e) {
-        e.printStackTrace();
+        SpotifyUtils.genericException(e);
       }
     }
     return allResults;
@@ -109,7 +110,7 @@ public class SpotifyOptimizedExecutorService {
       try {
         future.get();
       } catch (InterruptedException | ExecutionException e) {
-        e.printStackTrace();
+        SpotifyUtils.genericException(e);
       }
     }
   }

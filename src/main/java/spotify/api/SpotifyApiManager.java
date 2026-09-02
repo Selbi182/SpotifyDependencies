@@ -207,7 +207,7 @@ public class SpotifyApiManager {
       config.updateTokens(accessToken, refreshToken);
     } catch (IOException e) {
       log.error("Failed to update tokens in the properties file! These will get lost during a server restart.");
-      e.printStackTrace();
+      SpotifyUtils.genericException(e);
     }
   }
 

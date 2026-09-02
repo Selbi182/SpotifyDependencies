@@ -13,6 +13,7 @@ import se.michaelthelin.spotify.model_objects.specification.Paging;
 import spotify.api.SpotifyCall;
 import spotify.api.events.SpotifyApiException;
 
+@SuppressWarnings("unused")
 @Service
 public class ArtistService {
 
@@ -48,7 +49,7 @@ public class ArtistService {
    */
   public List<Artist> getFollowedArtists() throws SpotifyApiException {
     return SpotifyCall.executePaging(spotifyApi
-      .getUsersFollowedArtists(ModelObjectType.ARTIST)
+      .getFollowedArtists(ModelObjectType.ARTIST)
       .limit(MAX_ARTIST_FETCH_LIMIT));
   }
 

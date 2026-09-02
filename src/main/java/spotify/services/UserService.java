@@ -4,12 +4,13 @@ import java.util.Locale;
 
 import org.springframework.stereotype.Service;
 
-import com.neovisionaries.i18n.CountryCode;
+import se.michaelthelin.spotify.enums.CountryCode;
 
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.model_objects.specification.User;
 import spotify.api.SpotifyCall;
 
+@SuppressWarnings("unused")
 @Service
 public class UserService {
   private final SpotifyApi spotifyApi;

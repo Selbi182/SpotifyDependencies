@@ -10,7 +10,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import spotify.api.SpotifyDependenciesSettings;
+import spotify.util.SpotifyUtils;
 
+@SuppressWarnings("unused")
 @Configuration
 public class SpotifyApiConfig {
   private static final String CLIENT_ID = "client_id";
@@ -82,7 +84,7 @@ public class SpotifyApiConfig {
         }
       }
     } catch (IOException e) {
-      e.printStackTrace();
+      SpotifyUtils.genericException(e);
       System.out.println("Failed to read " + propertiesFile + ". Terminating!");
       System.exit(1);
       return null;

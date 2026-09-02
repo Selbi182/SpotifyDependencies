@@ -5,9 +5,8 @@ package spotify.api.events;
  * the Spotify Web API, most commonly (but not limited to) the
  * {@link se.michaelthelin.spotify.exceptions.SpotifyWebApiException}.
  */
+@SuppressWarnings("unused")
 public class SpotifyApiException extends RuntimeException {
-  private static final long serialVersionUID = 1108719662083800510L;
-
   private final Exception nestedException;
 
   public SpotifyApiException(Exception e) {

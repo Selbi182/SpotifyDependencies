@@ -7,14 +7,15 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.neovisionaries.i18n.CountryCode;
+import se.michaelthelin.spotify.enums.CountryCode;
 
 import se.michaelthelin.spotify.SpotifyApi;
-import se.michaelthelin.spotify.enums.AlbumGroup;
+import se.michaelthelin.spotify.enums.AlbumType;
 import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
 import spotify.api.events.SpotifyApiException;
 import spotify.api.SpotifyCall;
 
+@SuppressWarnings("unused")
 @Service
 public class AlbumService {
   private final static int MAX_ALBUM_FETCH_LIMIT = 10;
@@ -35,7 +36,7 @@ public class AlbumService {
    * @param market the market
    * @return the albums
    */
-  public List<AlbumSimplified> getAllAlbumsOfArtists(List<String> artists, Set<AlbumGroup> enabledAlbumGroups, CountryCode market) throws SpotifyApiException {
+  public List<AlbumSimplified> getAllAlbumsOfArtists(List<String> artists, Set<AlbumType> enabledAlbumGroups, CountryCode market) throws SpotifyApiException {
     String albumGroupString = createAlbumGroupString(enabledAlbumGroups);
 
     // I've tried just about anything you can imagine. Parallel streams, threads,
@@ -58,9 +59,9 @@ public class AlbumService {
    * @param enabledAlbumGroups the enabled AlbumGroups
    * @return the searchable string for AlbumGroups
    */
-  public String createAlbumGroupString(Set<AlbumGroup> enabledAlbumGroups) {
+  public String createAlbumGroupString(Set<AlbumType> enabledAlbumGroups) {
     return enabledAlbumGroups.stream()
-      .map(AlbumGroup::getGroup)
+      .map(AlbumType::getType)
       .collect(Collectors.joining(","));
   }
 

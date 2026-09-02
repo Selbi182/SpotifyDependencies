@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 
 import spotify.api.SpotifyDependenciesSettings;
 
+@SuppressWarnings("unused")
 @Component
 public class SpotifyLogger {
   public enum Level {
@@ -138,16 +139,16 @@ public class SpotifyLogger {
       try {
         writeToExternalLog(msg);
       } catch (IOException e) {
-        e.printStackTrace();
+        SpotifyUtils.genericException(e);
       }
     }
   }
 
   /**
-   * Print a line of hyphens (----) as INFO-level log message
+   * Print a line of hyphens (----) as INFO-level log message. Length 80, no truncation, write to file.
    */
   public void printLine() {
-    info(Strings.repeat(LINE_SYMBOL, MAX_LINE_LENGTH - ELLIPSIS.length()));
+    logAtLevel(Strings.repeat(LINE_SYMBOL, 80), Level.INFO, false, true);
   }
 
   /**

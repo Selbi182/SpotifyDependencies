@@ -3,6 +3,7 @@ package spotify.api;
 import java.io.File;
 import java.util.List;
 
+@SuppressWarnings("SameReturnValue")
 public interface SpotifyDependenciesSettings {
 
   /**
@@ -34,7 +35,7 @@ public interface SpotifyDependenciesSettings {
   /**
    * The base path for all configuration files, such as spotifybot.properties
    *
-   * @return the base path, working directy by default
+   * @return the base path, working directly by default
    */
   default File configFilesBase() {
     return new File(".");

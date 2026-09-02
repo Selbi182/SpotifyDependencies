@@ -12,6 +12,7 @@ import spotify.util.SpotifyUtils;
 /**
  * Container class to map a simplified album by its simplified tracks
  */
+@SuppressWarnings("unused")
 public class AlbumTrackPair implements Comparable<AlbumTrackPair>, Comparator<AlbumTrackPair> {
   private final AlbumSimplified album;
   private final List<TrackSimplified> tracks;

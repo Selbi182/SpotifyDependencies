@@ -18,7 +18,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -28,35 +27,27 @@ import javax.imageio.ImageIO;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 
-import se.michaelthelin.spotify.enums.AlbumGroup;
 import se.michaelthelin.spotify.enums.AlbumType;
 import se.michaelthelin.spotify.enums.ModelObjectType;
 import se.michaelthelin.spotify.model_objects.IPlaylistItem;
 import se.michaelthelin.spotify.model_objects.specification.Album;
 import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
 import se.michaelthelin.spotify.model_objects.specification.ArtistSimplified;
-import se.michaelthelin.spotify.model_objects.specification.AudioFeatures;
 import se.michaelthelin.spotify.model_objects.specification.Image;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 import se.michaelthelin.spotify.model_objects.specification.TrackSimplified;
-import spotify.services.TrackService;
 import spotify.util.data.AlbumTrackPair;
 
+@SuppressWarnings("unused")
 public final class SpotifyUtils {
-  private final static double EPSILON = 0.01;
-
   private final static Pattern EP_MATCHER = Pattern.compile("\\bE\\W?P\\W?\\b");
   private final static int EP_SONG_COUNT_THRESHOLD = 5;
   private final static int EP_DURATION_THRESHOLD = 20 * 60 * 1000;
   private final static int EP_SONG_COUNT_THRESHOLD_LESSER = 3;
   private final static int EP_DURATION_THRESHOLD_LESSER = 10 * 60 * 1000;
 
-  private final static Pattern LIVE_MATCHER = Pattern.compile("\\b(LIVE|SHOW|TOUR)\\b", Pattern.CASE_INSENSITIVE);
-  private final static Pattern LIVE_MATCHER_EXTRA =
-    Pattern.compile("(\\bLIVE\\W*$|\\bLIVE.*?\\b(\\d{4}|(IN|AT|ON|PERFORMANCE|SHOW|CONCERT|SESSION))\\b)", Pattern.CASE_INSENSITIVE);
+  private final static Pattern LIVE_MATCHER = Pattern.compile("\\p{Punct}.*\\b(LIVE|SHOW|TOUR)\\b", Pattern.CASE_INSENSITIVE);
   private final static double LIVE_SONG_COUNT_PERCENTAGE_THRESHOLD_DEFINITE = 0.9;
-  private final static double LIVENESS_THRESHOLD = 0.55;
-  private final static double LIVENESS_THRESHOLD_LESSER = 0.4;
   private final static int LIVE_MIN_SONG_COUNT_FOR_SHORTCUT = 3;
 
   private final static Pattern REMIX_MATCHER = Pattern.compile("\\b(RMX|REMIX+|REMIXES)\\b", Pattern.CASE_INSENSITIVE);
@@ -87,7 +78,7 @@ public final class SpotifyUtils {
     try {
       Thread.sleep(millis);
     } catch (InterruptedException e) {
-      e.printStackTrace();
+      genericException(e);
     }
   }
 
@@ -132,9 +123,9 @@ public final class SpotifyUtils {
    * @param <T> anything
    * @return the album group
    */
-  public static <T> Map<AlbumGroup, List<T>> createAlbumGroupToListOfTMap() {
-    Map<AlbumGroup, List<T>> albumGroupToList = new HashMap<>();
-    for (AlbumGroup ag : AlbumGroup.values()) {
+  public static <T> Map<AlbumType, List<T>> createAlbumGroupToListOfTMap() {
+    Map<AlbumType, List<T>> albumGroupToList = new HashMap<>();
+    for (AlbumType ag : AlbumType.values()) {
       albumGroupToList.put(ag, new ArrayList<>());
     }
     return albumGroupToList;
@@ -517,7 +508,7 @@ public final class SpotifyUtils {
     trackBuilder.setArtists(ts.getArtists());
     trackBuilder.setDiscNumber(ts.getDiscNumber());
     trackBuilder.setDurationMs(ts.getDurationMs());
-    trackBuilder.setExplicit(ts.getIsExplicit());
+    trackBuilder.setExplicit(ts.getExplicit());
     trackBuilder.setExternalUrls(ts.getExternalUrls());
     trackBuilder.setHref(ts.getHref());
     trackBuilder.setId(ts.getId());
@@ -581,52 +572,30 @@ public final class SpotifyUtils {
   }
 
   /**
-   * Returns true if the given release qualifies as live release. The definition
-   * of a live release is a release that fulfills ANY of the following attributes:
-   * <ul>
-   * <li>At least half of the songs of this release have a combined "liveness"
-   * average of 50% or more</li>
-   * <li>If the word "LIVE" is included in the release title, the required
-   * liveness threshold is reduced to 25%</li>
-   * </ul>
-   * The liveness value is determined by the Spotify API for each individual song.
-   * It gives a vague idea how probable it is for the song to be live. Hints like
-   * recording quality and audience cheers are used.
+   * Returns true if the given release qualifies as live release. Whether a release
+   * counts as live is determined by the title and individual songs containing
+   * the literal word "Live" (this had to be simplified due to Spotify API changes).
    *
    * @param albumTrackPair the AlbumTrackPair
-   * @param trackService the TrackService required to find the liveness values
    * @return true if the AlbumTrackPair qualifies as Live release
    */
-  public static boolean isLiveRelease(AlbumTrackPair albumTrackPair, TrackService trackService) {
+  public static boolean isLiveRelease(AlbumTrackPair albumTrackPair) {
     String albumTitle = albumTrackPair.getAlbum().getName();
     List<TrackSimplified> tracks = albumTrackPair.getTracks();
     double trackCount = tracks.size();
     double liveTracks = tracks.stream().filter(t -> LIVE_MATCHER.matcher(t.getName()).find()).count();
     double liveTrackPercentage = liveTracks / trackCount;
-    if (liveTrackPercentage > LIVE_SONG_COUNT_PERCENTAGE_THRESHOLD_DEFINITE) {
-      if (trackCount > LIVE_MIN_SONG_COUNT_FOR_SHORTCUT
-            || LIVE_MATCHER_EXTRA.matcher(albumTitle).find()) {
-        return true;
-      }
+    if (liveTrackPercentage > LIVE_SONG_COUNT_PERCENTAGE_THRESHOLD_DEFINITE && trackCount > LIVE_MIN_SONG_COUNT_FOR_SHORTCUT) {
+      return true;
     }
 
     boolean hasLiveInTitle = LIVE_MATCHER.matcher(albumTitle).find();
-    boolean hasLiveInTracks = liveTrackPercentage > EPSILON;
+    boolean hasLiveInTracks = liveTrackPercentage >= 0.5;
 
-    if (hasLiveInTitle || hasLiveInTracks) {
-      List<AudioFeatures> audioFeatures = trackService.getAudioFeatures(tracks);
-      double averageLiveness = audioFeatures.stream()
-        .filter(Objects::nonNull)
-        .mapToDouble(AudioFeatures::getLiveness)
-        .average()
-        .orElse(0.0);
-      boolean isLive = averageLiveness > LIVENESS_THRESHOLD;
-      if (!isLive && hasLiveInTitle) {
-        isLive = averageLiveness >= LIVENESS_THRESHOLD_LESSER;
-      }
-      return isLive;
-    }
-    return false;
+    // Note: In an old version, at this point this function would also check for Spotify's "liveness" values.
+    // Unfortunately, that endpoint has been deprecated without replacement.
+
+    return (hasLiveInTitle && hasLiveInTracks);
   }
 
   /**
@@ -641,7 +610,7 @@ public final class SpotifyUtils {
     String albumTitle = albumTrackPair.getAlbum().getName();
     List<TrackSimplified> tracks = albumTrackPair.getTracks();
     boolean hasRemixInTitle = REMIX_MATCHER.matcher(albumTitle).find();
-    List<String> trackNames = tracks.stream().map(TrackSimplified::getName).collect(Collectors.toList());
+    List<String> trackNames = tracks.stream().map(TrackSimplified::getName).toList();
     double trackCountRemix = trackNames.stream().filter(t -> REMIX_MATCHER.matcher(t).find()).count();
     double trackCount = trackNames.size();
     double remixPercentage = trackCountRemix / trackCount;
@@ -681,6 +650,7 @@ public final class SpotifyUtils {
    * @return the ID as String
    * @throws MalformedURLException on an illegal URL
    */
+  @SuppressWarnings("JavadocLinkAsPlainText")
   public static String getIdFromSpotifyUrl(String spotifyUrl) throws MalformedURLException {
     URL url = new URL(spotifyUrl);
     String path = url.getPath();
@@ -699,6 +669,7 @@ public final class SpotifyUtils {
    * @return the full URL as String
    * @throws IOException if the URL is malformed or the connection failed
    */
+  @SuppressWarnings("JavadocLinkAsPlainText")
   public static String getFullUrlFromShortSpotifyUrl(String shortSpotifyUrl) throws IOException {
     Connection.Response execute = Jsoup.connect(shortSpotifyUrl).followRedirects(true).execute();
     return execute.url().toString();
@@ -711,6 +682,7 @@ public final class SpotifyUtils {
    * @param spotifyUrl the Spotify URL
    * @return true if it's a short URL
    */
+  @SuppressWarnings("JavadocLinkAsPlainText")
   public static boolean isShortSpotifyUrl(String spotifyUrl) {
     return spotifyUrl.startsWith("https://spotify.link/");
   }
@@ -730,8 +702,20 @@ public final class SpotifyUtils {
         return Base64.getEncoder().encodeToString(byteStream.toByteArray());
       }
     } catch (IOException e) {
-      e.printStackTrace();
+      genericException(e);
     }
     return null;
+  }
+
+  /**
+   * Print generic Exception stack trace (suppressed warning).
+   *
+   * @param e the Exception to print
+   */
+  @SuppressWarnings("CallToPrintStackTrace")
+  public static void genericException(Exception e) {
+    if (e != null) {
+      e.printStackTrace();
+    }
   }
 }

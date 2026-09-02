@@ -80,7 +80,7 @@ public class SpotifyCall {
 			}
 		}
 
-		finalException.printStackTrace();
+		SpotifyUtils.genericException(finalException);
 		throw new SpotifyApiException(finalException);
 	}
 

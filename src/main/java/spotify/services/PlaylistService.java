@@ -15,12 +15,13 @@ import se.michaelthelin.spotify.model_objects.specification.PlaylistSimplified;
 import se.michaelthelin.spotify.model_objects.specification.PlaylistTrack;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 import se.michaelthelin.spotify.requests.data.playlists.AddItemsToPlaylistRequest;
-import se.michaelthelin.spotify.requests.data.playlists.ChangePlaylistsDetailsRequest;
+import se.michaelthelin.spotify.requests.data.playlists.ChangePlaylistDetailsRequest;
 import se.michaelthelin.spotify.requests.data.playlists.CreatePlaylistRequest;
 import spotify.api.SpotifyCall;
 import spotify.api.events.SpotifyApiException;
 import spotify.util.SpotifyUtils;
 
+@SuppressWarnings("unused")
 @Service
 public class PlaylistService {
   private final static String TRACK_URI_PREFIX = "spotify:track:";
@@ -61,7 +62,7 @@ public class PlaylistService {
    */
   public List<PlaylistTrack> getPlaylistTracks(String playlistId, int offset) {
     return SpotifyCall.executePaging(spotifyApi
-      .getPlaylistsItems(playlistId)
+      .getPlaylistItems(playlistId)
       .offset(offset)
       .limit(PLAYLIST_INTERACTION_LIMIT));
   }
@@ -179,7 +180,7 @@ public class PlaylistService {
    */
   public void clearPlaylist(Playlist playlist) {
     String playlistId = playlist.getId();
-    List<IPlaylistItem> playlistTracks = SpotifyCall.executePaging(spotifyApi.getPlaylistsItems(playlistId)).stream()
+    List<IPlaylistItem> playlistTracks = SpotifyCall.executePaging(spotifyApi.getPlaylistItems(playlistId)).stream()
       .map(PlaylistTrack::getItem)
       .collect(Collectors.toList());
     removeItemsFromPlaylist(playlistId, playlistTracks);
@@ -209,7 +210,7 @@ public class PlaylistService {
    * @param playlistId the playlist ID to delete
    */
   public void deletePlaylist(String playlistId) {
-    SpotifyCall.execute(spotifyApi.unfollowPlaylist(playlistId));
+    SpotifyCall.execute(spotifyApi.removeItemsFromLibrary("spotify:playlist:" + playlistId));
   }
 
   /**
@@ -218,7 +219,7 @@ public class PlaylistService {
    * @return the playlists of the current user
    */
   public List<PlaylistSimplified> getCurrentUsersPlaylists() {
-    return SpotifyCall.executePaging(spotifyApi.getListOfCurrentUsersPlaylists());
+    return SpotifyCall.executePaging(spotifyApi.getCurrentUsersPlaylists());
   }
 
   /**
@@ -265,7 +266,7 @@ public class PlaylistService {
    *
    * @param changePlaylistsDetailsRequest the incomplete builder
    */
-  public void updatePlaylistDetails(ChangePlaylistsDetailsRequest.Builder changePlaylistsDetailsRequest) {
+  public void updatePlaylistDetails(ChangePlaylistDetailsRequest.Builder changePlaylistsDetailsRequest) {
     SpotifyCall.execute(changePlaylistsDetailsRequest);
   }
 
@@ -285,7 +286,7 @@ public class PlaylistService {
         itemToDelete.addProperty("uri", item.getUri());
         partitionDeletion.add(itemToDelete);
       }
-      SpotifyCall.execute(spotifyApi.removeItemsFromPlaylist(playlistId, partitionDeletion));
+      SpotifyCall.execute(spotifyApi.removePlaylistItems(playlistId, partitionDeletion));
     }
   }
 
@@ -299,7 +300,7 @@ public class PlaylistService {
     if (imageUrl != null) {
       String base64image = SpotifyUtils.toBase64Image(imageUrl);
       if (base64image != null) {
-        SpotifyCall.execute(spotifyApi.uploadCustomPlaylistCoverImage(playlist.getId()).image_data(base64image));
+        SpotifyCall.execute(spotifyApi.addCustomPlaylistCoverImage(playlist.getId()).image_data(base64image));
       }
     }
   }

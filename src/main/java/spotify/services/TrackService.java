@@ -8,26 +8,24 @@ import org.springframework.stereotype.Service;
 
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
-import se.michaelthelin.spotify.model_objects.specification.AudioFeatures;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 import se.michaelthelin.spotify.model_objects.specification.TrackSimplified;
-import spotify.api.events.SpotifyApiException;
 import spotify.api.SpotifyCall;
+import spotify.api.events.SpotifyApiException;
 import spotify.util.SpotifyLogger;
 import spotify.util.data.AlbumTrackPair;
 
+@SuppressWarnings("unused")
 @Service
 public class TrackService {
 
 	private final static int MAX_PLAYLIST_TRACK_FETCH_LIMIT = 10;
 
 	private final SpotifyApi spotifyApi;
-	private final SpotifyLogger log;
 
-	TrackService(SpotifyApi spotifyApi, SpotifyLogger spotifyLogger) {
+  TrackService(SpotifyApi spotifyApi, SpotifyLogger spotifyLogger) {
 		this.spotifyApi = spotifyApi;
-		this.log = spotifyLogger;
-	}
+  }
 
 	/**
 	 * Get all songs IDs of the given list of albums, categorized as
@@ -53,26 +51,9 @@ public class TrackService {
 	 */
 	public AlbumTrackPair getTracksOfSingleAlbum(AlbumSimplified album) throws SpotifyApiException {
 		List<TrackSimplified> tracksOfAlbum = SpotifyCall.executePaging(spotifyApi
-			.getAlbumsTracks(album.getId())
+			.getAlbumTracks(album.getId())
 			.limit(MAX_PLAYLIST_TRACK_FETCH_LIMIT));
 		return AlbumTrackPair.of(album, tracksOfAlbum);
-	}
-
-	/**
-	 * Get the audio features for every track in the given list
-	 * 
-	 * @param tracks the tracks
-	 * @return the audio features (in the same order as the passed tracks)
-	 */
-	public List<AudioFeatures> getAudioFeatures(List<TrackSimplified> tracks) {
-		try {
-			String[] trackIds = tracks.stream().map(TrackSimplified::getId).toArray(String[]::new);
-			AudioFeatures[] audioFeatures = SpotifyCall.execute(spotifyApi.getAudioFeaturesForSeveralTracks(trackIds));
-			return Arrays.asList(audioFeatures);
-		} catch (SpotifyApiException e) {
-			log.stackTrace(e);
-		}
-		return null;
 	}
 
 	/**
