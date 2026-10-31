@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        springVersion = '4.1.1'
+        springVersion = '4.1.2'
     }
 }
 
@@ -10,7 +10,7 @@ plugins {
 }
 
 group = 'spotify'
-version = '1.13.0-pre9c'
+version = '1.14.0'
 
 java {
     withJavadocJar()
@@ -83,7 +83,7 @@ publishing {
 
 dependencies {
     implementation "org.springframework.boot:spring-boot-starter-web:$springVersion"
-    implementation 'se.michaelthelin.spotify:spotify-web-api-java:10.0.0-RC7'
-    implementation 'org.jsoup:jsoup:1.16.2'
-    implementation 'com.github.albfernandez:juniversalchardet:2.4.0'
+    implementation 'se.michaelthelin.spotify:spotify-web-api-java:10.0.0'
+    implementation 'org.jsoup:jsoup:1.23.2'
+    implementation 'com.github.albfernandez:juniversalchardet:2.5.2'
 }
