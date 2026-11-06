@@ -5,7 +5,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -23,9 +27,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.imageio.ImageIO;
-
-import org.jsoup.Connection;
-import org.jsoup.Jsoup;
 
 import se.michaelthelin.spotify.enums.AlbumType;
 import se.michaelthelin.spotify.enums.ModelObjectType;
@@ -210,7 +211,7 @@ public final class SpotifyUtils {
   public static List<String> toArtistNamesList(ArtistSimplified[] artists) {
     return Stream.of(artists)
       .map(ArtistSimplified::getName)
-      .collect(Collectors.toList());
+      .toList();
   }
 
   /**
@@ -222,7 +223,7 @@ public final class SpotifyUtils {
   public static List<String> toArtistNamesList(Track t) {
     return Stream.of(t.getArtists())
       .map(ArtistSimplified::getName)
-      .collect(Collectors.toList());
+      .toList();
   }
 
   /**
@@ -234,7 +235,7 @@ public final class SpotifyUtils {
   public static List<String> toArtistNamesList(TrackSimplified ts) {
     return Stream.of(ts.getArtists())
       .map(ArtistSimplified::getName)
-      .collect(Collectors.toList());
+      .toList();
   }
 
   /**
@@ -670,9 +671,22 @@ public final class SpotifyUtils {
    * @throws IOException if the URL is malformed or the connection failed
    */
   @SuppressWarnings("JavadocLinkAsPlainText")
-  public static String getFullUrlFromShortSpotifyUrl(String shortSpotifyUrl) throws IOException {
-    Connection.Response execute = Jsoup.connect(shortSpotifyUrl).followRedirects(true).execute();
-    return execute.url().toString();
+  public static String getFullUrlFromShortSpotifyUrl(String shortSpotifyUrl) throws IOException, InterruptedException {
+    HttpClient client = HttpClient.newBuilder()
+      .followRedirects(HttpClient.Redirect.NORMAL)
+      .build();
+
+    HttpRequest request = HttpRequest.newBuilder()
+      .uri(URI.create(shortSpotifyUrl))
+      .GET()
+      .build();
+
+    HttpResponse<Void> response = client.send(
+      request,
+      HttpResponse.BodyHandlers.discarding()
+    );
+
+    return response.uri().toString();
   }
 
   /**

@@ -5,9 +5,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.model_objects.IPlaylistItem;
 import se.michaelthelin.spotify.model_objects.specification.Playlist;
@@ -81,7 +78,7 @@ public class PlaylistService {
       .stream()
       .map(PlaylistTrack::getItem)
       .map(Track.class::cast)
-      .collect(Collectors.toList());
+      .toList();
   }
 
   /**
@@ -145,7 +142,7 @@ public class PlaylistService {
    * @param position custom position for the new tracks within the playlist (end if null)
    */
   public void addTracksToPlaylist(Playlist playlist, List<Track> tracks, Integer position) {
-    List<String> trackIds = tracks.stream().map(Track::getId).collect(Collectors.toList());
+    List<String> trackIds = tracks.stream().map(Track::getId).toList();
     addSongsToPlaylistById(playlist, trackIds, position);
   }
 
@@ -161,11 +158,12 @@ public class PlaylistService {
    */
   public void addSongsToPlaylistById(Playlist playlist, List<String> trackIds, Integer position) throws SpotifyApiException {
     if (!trackIds.isEmpty()) {
-      JsonArray json = new JsonArray();
-      for (String id : trackIds) {
-        json.add(TRACK_URI_PREFIX + id);
-      }
-      AddItemsToPlaylistRequest.Builder builder = spotifyApi.addItemsToPlaylist(playlist.getId(), json);
+      String trackIdsToAdd = trackIds.stream()
+        .map(trackId -> TRACK_URI_PREFIX + trackId)
+        .collect(Collectors.joining(","));
+      // TODO use body instead of query param (once wrapper API has been updated)
+      // TODO partition by 100
+      AddItemsToPlaylistRequest.Builder builder = spotifyApi.addItemsToPlaylist(playlist.getId()).uris(trackIdsToAdd);
       if (position != null) {
         builder = builder.position(position);
       }
@@ -182,7 +180,7 @@ public class PlaylistService {
     String playlistId = playlist.getId();
     List<IPlaylistItem> playlistTracks = SpotifyCall.executePaging(spotifyApi.getPlaylistItems(playlistId)).stream()
       .map(PlaylistTrack::getItem)
-      .collect(Collectors.toList());
+      .toList();
     removeItemsFromPlaylist(playlistId, playlistTracks);
   }
 
@@ -280,13 +278,10 @@ public class PlaylistService {
    */
   public void removeItemsFromPlaylist(String playlistId, List<IPlaylistItem> itemsToDelete) {
     for (List<IPlaylistItem> partition : SpotifyUtils.partitionList(itemsToDelete, PLAYLIST_INTERACTION_LIMIT)) {
-      JsonArray partitionDeletion = new JsonArray();
-      for (IPlaylistItem item : partition) {
-        JsonObject itemToDelete = new JsonObject();
-        itemToDelete.addProperty("uri", item.getUri());
-        partitionDeletion.add(itemToDelete);
-      }
-      SpotifyCall.execute(spotifyApi.removePlaylistItems(playlistId, partitionDeletion));
+      List<String> trackIdsToDeletePartition = partition.stream()
+        .map(track -> TRACK_URI_PREFIX + track.getId())
+        .toList();
+      SpotifyCall.execute(spotifyApi.removePlaylistItems(playlistId, trackIdsToDeletePartition));
     }
   }
 

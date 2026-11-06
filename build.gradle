@@ -10,7 +10,7 @@ plugins {
 }
 
 group = 'spotify'
-version = '1.14.0'
+version = '1.15.0-pre1'
 
 java {
     withJavadocJar()
@@ -83,7 +83,6 @@ publishing {
 
 dependencies {
     implementation "org.springframework.boot:spring-boot-starter-web:$springVersion"
-    implementation 'se.michaelthelin.spotify:spotify-web-api-java:10.0.0'
-    implementation 'org.jsoup:jsoup:1.23.2'
+    implementation 'se.michaelthelin.spotify:spotify-web-api-java:11.0.0-RC2'
     implementation 'com.github.albfernandez:juniversalchardet:2.5.2'
 }
